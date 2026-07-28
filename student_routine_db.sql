@@ -70,17 +70,17 @@ CREATE TABLE `journal_entries` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
--- Table structure for table `money_records`
+-- Table structure for table `transactions`
 -- --------------------------------------------------------
-CREATE TABLE `money_records` (
-  `money_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `amount` decimal(10,2) NOT NULL,
-  `category` varchar(50) NOT NULL,
-  `description` varchar(255) DEFAULT NULL,
-  `transaction_type` enum('Income','Expense') NOT NULL,
-  `transaction_date` date NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+CREATE TABLE `transactions` (
+  `T_ID` int(11) NOT NULL,
+  `U_ID` varchar(50) NOT NULL,
+  `TransactionType` enum('Income','Expense') NOT NULL,
+  `Category` varchar(100) NOT NULL,
+  `Description` varchar(255) NOT NULL,
+  `Amount` decimal(10,2) NOT NULL,
+  `TransactionDate` date NOT NULL,
+  `IsDeleted` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -103,8 +103,8 @@ ALTER TABLE `journal_entries`
   ADD PRIMARY KEY (`journal_id`),
   ADD KEY `user_id` (`user_id`);
 
-ALTER TABLE `money_records`
-  ADD PRIMARY KEY (`money_id`),
+ALTER TABLE `transactions`
+  ADD PRIMARY KEY (`T_ID`),
   ADD KEY `user_id` (`user_id`);
 
 -- --------------------------------------------------------
@@ -123,8 +123,8 @@ ALTER TABLE `exercise_records`
 ALTER TABLE `journal_entries`
   MODIFY `journal_id` int(11) NOT NULL AUTO_INCREMENT;
 
-ALTER TABLE `money_records`
-  MODIFY `money_id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `transactions`
+  MODIFY `T_ID` int(11) NOT NULL AUTO_INCREMENT;
 
 -- --------------------------------------------------------
 -- Constraints for dumped tables
@@ -139,8 +139,8 @@ ALTER TABLE `exercise_records`
 ALTER TABLE `journal_entries`
   ADD CONSTRAINT `journal_entries_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE `money_records`
-  ADD CONSTRAINT `money_records_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `transactions`
+  ADD CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`U_ID`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 COMMIT;
 
