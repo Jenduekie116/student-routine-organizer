@@ -1,6 +1,6 @@
 <?php
-require 'auth_guard.php'; 
-require 'database.php';
+require 'auth_guard.php';   // redirects to login.php if not logged in, provides $_SESSION
+require 'database.php';     // provides $conn (mysqli)
 
 $user_id = $_SESSION['user_id'];
 $action  = $_GET['action'] ?? 'list';
@@ -155,11 +155,13 @@ $success_messages = [
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container">
+<div class="app-layout">
+  <?php include 'sidebar.php'; ?>
+  <div class="main-content">
+  <div class="container">
 
   <div class="page-header">
     <h1>🏃‍♂️ Exercise Tracker</h1>
-    <a href="index.php" class="back-link">&larr; Back to dashboard</a>
   </div>
 
   <?php if (isset($success_messages[$success])): ?>
@@ -294,6 +296,8 @@ $success_messages = [
 
   <?php endif; ?>
 
+  </div>
+  </div>
 </div>
 </body>
 </html>

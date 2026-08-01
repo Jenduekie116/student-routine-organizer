@@ -1,28 +1,29 @@
 /* ==========================================================
    Student Routine Organizer - Base Stylesheet
-   Placeholder design. Swap colors/spacing later once the
-   team finalizes the visual direction - class names below
-   are kept generic so pages don't need HTML rewrites.
    ========================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --theme-blue: #2563eb;
-  --theme-blue-dark: #1d4ed8;
-  --theme-bg: #f5f6fa;
+  --theme-primary: #22c55e;
+  --theme-primary-dark: #16a34a;
+  --theme-primary-light: #dcfce7;
+  --theme-blue: var(--theme-primary);       /* alias: old references turn green automatically */
+  --theme-blue-dark: var(--theme-primary-dark);
+  --theme-bg: #f3f4f8;
   --theme-card-bg: #ffffff;
-  --theme-border: #e2e4ea;
+  --theme-border: #e5e7eb;
   --theme-text: #1f2430;
   --theme-text-muted: #6b7280;
   --theme-danger: #dc2626;
   --theme-success: #16a34a;
-  --radius: 10px;
+  --radius: 12px;
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: "Segoe UI", Arial, sans-serif;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
   background: var(--theme-bg);
   color: var(--theme-text);
 }
@@ -41,9 +42,10 @@ a:hover { text-decoration: underline; }
 /* Cards */
 .card {
   background: var(--theme-card-bg);
-  border: 1px solid var(--theme-border);
+  border: 1px solid rgba(15, 23, 42, 0.04);
   border-radius: var(--radius);
   padding: 20px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
 }
 
 .clickable { transition: box-shadow 0.15s, transform 0.15s; }
@@ -69,20 +71,21 @@ a:hover { text-decoration: underline; }
 /* Buttons */
 .btn {
   display: inline-block;
-  padding: 8px 16px;
-  border-radius: var(--radius);
+  padding: 9px 18px;
+  border-radius: 999px;
   border: 1px solid var(--theme-border);
   background: #fff;
   color: var(--theme-text);
   font-size: 0.9rem;
+  font-weight: 500;
   cursor: pointer;
 }
 .btn:hover { background: #f0f1f5; }
-.btn-primary { background: var(--theme-blue); color: #fff; border-color: var(--theme-blue); }
-.btn-primary:hover { background: var(--theme-blue-dark); }
+.btn-primary { background: var(--theme-primary); color: #fff; border-color: var(--theme-primary); box-shadow: 0 4px 12px rgba(34,197,94,0.3); }
+.btn-primary:hover { background: var(--theme-primary-dark); }
 .btn-danger { background: #fff; color: var(--theme-danger); border-color: var(--theme-danger); }
 .btn-danger:hover { background: #fdeaea; }
-.btn-sm { padding: 4px 10px; font-size: 0.8rem; }
+.btn-sm { padding: 5px 14px; font-size: 0.8rem; }
 
 /* Forms */
 .form-group { margin-bottom: 14px; }
@@ -140,3 +143,105 @@ table.data-table th { color: var(--theme-text-muted); font-weight: 500; font-siz
   margin-bottom: 16px;
 }
 .widget-header h3 { margin: 0; }
+
+/* Colorful highlight cards for dashboard stats */
+.highlight-card {
+  border-radius: var(--radius);
+  padding: 20px;
+  border: none;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+}
+.highlight-card .icon-chip {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem;
+  margin-bottom: 14px;
+  background: rgba(255,255,255,0.35);
+}
+.highlight-card .stat-label { font-size: 0.82rem; margin-bottom: 4px; opacity: 0.85; font-weight: 500; }
+.highlight-card .stat-value { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.5px; }
+.hl-hero { background: linear-gradient(135deg, #22c55e, #16a34a); color: #ffffff; }
+.hl-hero .stat-label { color: #ecfdf3; }
+.hl-hero .icon-chip { background: rgba(255,255,255,0.22); }
+.hl-blue { background: #dbeafe; color: #1e3a8a; }
+.hl-blue .icon-chip { background: rgba(30,58,138,0.1); }
+.hl-amber { background: #fef3c7; color: #78350f; }
+.hl-amber .icon-chip { background: rgba(120,53,15,0.1); }
+.hl-pink { background: #fce7f3; color: #831843; }
+.hl-pink .icon-chip { background: rgba(131,24,67,0.1); }
+
+/* Chart card */
+.chart-card canvas { max-height: 220px; }
+
+.dashboard-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; margin-top: 16px; }
+@media (max-width: 800px) {
+  .dashboard-row { grid-template-columns: 1fr; }
+}
+
+/* Sidebar layout */
+:root {
+  --sidebar-bg: #1f2430;
+  --sidebar-text: rgba(255,255,255,0.65);
+  --sidebar-text-active: #ffffff;
+  --sidebar-active-bg: rgba(255,255,255,0.08);
+  --sidebar-width: 220px;
+}
+
+.app-layout { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+}
+.sidebar-logo-text {
+  display: block;
+  padding: 0 20px 20px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+}
+.sidebar-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 10px;
+}
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: var(--radius);
+  color: var(--sidebar-text);
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-left: 3px solid transparent;
+}
+.sidebar-link:hover { background: rgba(255,255,255,0.06); text-decoration: none; color: #fff; }
+.sidebar-link.active {
+  background: var(--sidebar-active-bg);
+  color: var(--sidebar-text-active);
+  border-left: 3px solid var(--theme-primary);
+}
+.sidebar-footer {
+  padding: 14px 20px 0;
+  margin-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-user { color: #fff; font-size: 0.85rem; margin-bottom: 8px; }
+
+.main-content { flex: 1; min-width: 0; background: var(--theme-bg); }
+
+@media (max-width: 700px) {
+  .app-layout { flex-direction: column; }
+  .sidebar { width: 100%; flex-direction: row; align-items: center; padding: 10px 14px; }
+  .sidebar-logo-text { padding: 0; margin-right: auto; }
+  .sidebar-nav { flex-direction: row; padding: 0; }
+  .sidebar-footer { display: none; }
+}
