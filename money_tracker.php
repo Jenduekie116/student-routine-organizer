@@ -149,95 +149,100 @@ $balance = $total_income - $total_expense;
     </style>
 </head>
 <body>
-    <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h1 style="color: #2b6cb0;">💰 My Money Tracker</h1>
-            <button class="btn" onclick="openAddModal()">+ Add Transaction</button>
-        </div>
+    <div class="app-layout">
+        <?php include 'sidebar.php'; ?>
+        <div class="main-content">
+            <div class="container">
+                <div class="page-header">
+                    <h1>💰 My Money Tracker</h1>
+                    <button class="btn" onclick="openAddModal()">+ Add Transaction</button>
+                </div>
 
-        <div style="display: flex; gap: 20px; margin-bottom: 25px;">
-            <div style="flex: 1; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <p style="color: #718096; margin: 0 0 5px 0;">Total Income</p>
-                <h2 style="color: #38a169; margin: 0;">RM <?= number_format($total_income, 2) ?></h2>
-            </div>
-            <div style="flex: 1; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <p style="color: #718096; margin: 0 0 5px 0;">Total Expense</p>
-                <h2 style="color: #e53e3e; margin: 0;">RM <?= number_format($total_expense, 2) ?></h2>
-            </div>
-            <div style="flex: 1; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <p style="color: #718096; margin: 0 0 5px 0;">Net Balance</p>
-                <h2 style="color: <?= $balance >= 0 ? '#38a169' : '#e53e3e' ?>; margin: 0;">RM <?= number_format($balance, 2) ?></h2>
-            </div>
-        </div>
+                <div style="display: flex; gap: 20px; margin-bottom: 25px;">
+                    <div style="flex: 1; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <p style="color: #718096; margin: 0 0 5px 0;">Total Income</p>
+                        <h2 style="color: #38a169; margin: 0;">RM <?= number_format($total_income, 2) ?></h2>
+                    </div>
+                    <div style="flex: 1; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <p style="color: #718096; margin: 0 0 5px 0;">Total Expense</p>
+                        <h2 style="color: #e53e3e; margin: 0;">RM <?= number_format($total_expense, 2) ?></h2>
+                    </div>
+                    <div style="flex: 1; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <p style="color: #718096; margin: 0 0 5px 0;">Net Balance</p>
+                        <h2 style="color: <?= $balance >= 0 ? '#38a169' : '#e53e3e' ?>; margin: 0;">RM <?= number_format($balance, 2) ?></h2>
+                    </div>
+                </div>
 
-        <?= $msg ?>
+                <?= $msg ?>
 
-        <form method="GET" class="filter-bar">
-            <div><label>Type</label>
-                <select name="search_type">
-                    <option value="">All</option>
-                    <option value="Income" <?= $filter_type == 'Income' ? 'selected' : '' ?>>Income</option>
-                    <option value="Expense" <?= $filter_type == 'Expense' ? 'selected' : '' ?>>Expense</option>
-                </select>
-            </div>
-            <div><label>Date</label><input type="date" name="search_date" value="<?= htmlspecialchars($filter_date) ?>"></div>
-            <div><label>Sort By</label>
-                <select name="sort_by">
-                    <option value="DESC" <?= $sort_by == 'DESC' ? 'selected' : '' ?>>Newest First</option>
-                    <option value="ASC" <?= $sort_by == 'ASC' ? 'selected' : '' ?>>Oldest First</option>
-                </select>
-            </div>
-            <div style="flex: 0; min-width: 180px;">
-                <label style="visibility: hidden; display: block;">Action</label>
-                <div style="display: flex; gap: 10px;">
-                    <button type="submit" class="btn" style="flex: 1;">Filter</button>
-                    <a href="money_tracker.php" class="btn" style="flex: 1; background: #a0aec0; text-align:center; text-decoration: none;">Clear</a>
+                        <form method="GET" class="filter-bar">
+                    <div><label>Type</label>
+                        <select name="search_type">
+                            <option value="">All</option>
+                            <option value="Income" <?= $filter_type == 'Income' ? 'selected' : '' ?>>Income</option>
+                            <option value="Expense" <?= $filter_type == 'Expense' ? 'selected' : '' ?>>Expense</option>
+                        </select>
+                    </div>
+                    <div><label>Date</label><input type="date" name="search_date" value="<?= htmlspecialchars($filter_date) ?>"></div>
+                    <div><label>Sort By</label>
+                        <select name="sort_by">
+                            <option value="DESC" <?= $sort_by == 'DESC' ? 'selected' : '' ?>>Newest First</option>
+                            <option value="ASC" <?= $sort_by == 'ASC' ? 'selected' : '' ?>>Oldest First</option>
+                        </select>
+                    </div>
+                    <div style="flex: 0; min-width: 180px;">
+                        <label style="visibility: hidden; display: block;">Action</label>
+                        <div style="display: flex; gap: 10px;">
+                            <button type="submit" class="btn" style="flex: 1;">Filter</button>
+                            <a href="money_tracker.php" class="btn" style="flex: 1; background: #a0aec0; text-align:center; text-decoration: none;">Clear</a>
+                        </div>
+                    </div>
+                </form>
+
+                        <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Amount (RM)</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (count($transactions) > 0): ?>
+                                <?php foreach ($transactions as $t): 
+                                    $safeDesc = htmlspecialchars(addslashes($t['description']));
+                                    $safeCat = htmlspecialchars(addslashes($t['category']));
+                                    $safeDate = htmlspecialchars($t['transaction_date']);
+                                    $safeAmount = htmlspecialchars($t['amount']);
+                                    $safeType = htmlspecialchars($t['transaction_type']);
+                                ?>
+                                    <tr>
+                                        <td><?= date('d M Y', strtotime($t['transaction_date'])) ?></td>
+                                        <td>
+                                            <span class="<?= $t['transaction_type'] == 'Income' ? 'income' : 'expense' ?>">
+                                                <?= htmlspecialchars($t['transaction_type']) ?>
+                                            </span>
+                                        </td>
+                                        <td><?= htmlspecialchars($t['category']) ?></td>
+                                        <td><?= htmlspecialchars($t['description']) ?></td>
+                                        <td style="font-weight: bold;"><?= number_format($t['amount'], 2) ?></td>
+                                        <td>
+                                            <span class="action-icon" onclick="openEditModal(<?= $t['transaction_id'] ?>, '<?= $safeType ?>', '<?= $safeCat ?>', '<?= $safeDesc ?>', '<?= $safeAmount ?>', '<?= $safeDate ?>')" title="Edit">✏️</span>
+                                            <span class="action-icon" onclick="confirmDelete(<?= $t['transaction_id'] ?>)" title="Delete">🗑️</span>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr><td colspan="6" style="text-align: center; padding: 20px;">No transactions found.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        </form>
-
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Type</th>
-                        <th>Category</th>
-                        <th>Description</th>
-                        <th>Amount (RM)</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (count($transactions) > 0): ?>
-                        <?php foreach ($transactions as $t): 
-                            $safeDesc = htmlspecialchars(addslashes($t['description']));
-                            $safeCat = htmlspecialchars(addslashes($t['category']));
-                            $safeDate = htmlspecialchars($t['transaction_date']);
-                            $safeAmount = htmlspecialchars($t['amount']);
-                            $safeType = htmlspecialchars($t['transaction_type']);
-                        ?>
-                            <tr>
-                                <td><?= date('d M Y', strtotime($t['transaction_date'])) ?></td>
-                                <td>
-                                    <span class="<?= $t['transaction_type'] == 'Income' ? 'income' : 'expense' ?>">
-                                        <?= htmlspecialchars($t['transaction_type']) ?>
-                                    </span>
-                                </td>
-                                <td><?= htmlspecialchars($t['category']) ?></td>
-                                <td><?= htmlspecialchars($t['description']) ?></td>
-                                <td style="font-weight: bold;"><?= number_format($t['amount'], 2) ?></td>
-                                <td>
-                                    <span class="action-icon" onclick="openEditModal(<?= $t['transaction_id'] ?>, '<?= $safeType ?>', '<?= $safeCat ?>', '<?= $safeDesc ?>', '<?= $safeAmount ?>', '<?= $safeDate ?>')" title="Edit">✏️</span>
-                                    <span class="action-icon" onclick="confirmDelete(<?= $t['transaction_id'] ?>)" title="Delete">🗑️</span>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <tr><td colspan="6" style="text-align: center; padding: 20px;">No transactions found.</td></tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
         </div>
     </div>
 
