@@ -32,6 +32,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['form_action'])) {
         exit();
     }
 
+    // ---------- TOGGLE STATUS (quick complete / undo) ----------
+    if ($_POST['form_action'] === 'toggle_status') {
+        $habit_id = (int)($_POST['habit_id'] ?? 0);
+        $new_status = ($_POST['new_status'] ?? '') === 'Completed' ? 'Completed' : 'Pending';
+
+        $stmt = $conn->prepare(
+            "UPDATE habit_records SET completion_status = ?
+             WHERE habit_id = ? AND user_id = ?"
+        );
+        $stmt->bind_param("sii", $new_status, $habit_id, $user_id);
+        $stmt->execute();
+
+        $ok = $new_status === 'Completed' ? 'completed' : 'reopened';
+        header("Location: habit_tracker.php?success=" . $ok);
+        exit();
+    }
+
     // ---------- ADD or EDIT (shared validation) ----------
     if ($_POST['form_action'] === 'add' || $_POST['form_action'] === 'edit') {
         $habit_name        = trim($_POST['habit_name'] ?? '');
@@ -176,10 +193,12 @@ if ($action === 'list') {
 $completion_rate = $total_habits ? round(($total_completed / $total_habits) * 100) : 0;
 
 $success_messages = [
-    'added'    => 'Habit record added successfully.',
-    'updated'  => 'Habit record updated successfully.',
-    'deleted'  => 'Habit record deleted.',
-    'notfound' => 'That record could not be found.',
+    'added'     => 'Habit record added successfully.',
+    'updated'   => 'Habit record updated successfully.',
+    'deleted'   => 'Habit record deleted.',
+    'notfound'  => 'That record could not be found.',
+    'completed' => 'Habit marked as completed.',
+    'reopened'  => 'Habit marked as pending again.',
 ];
 ?>
 <!DOCTYPE html>
@@ -270,35 +289,12 @@ $success_messages = [
               <th>Habit name</th>
               <th>Frequency</th>
               <th>Status</th>
-              <th>Remain date</th>
               <th>Date</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            <?php
-              $today = new DateTime('today');
-              foreach ($records as $r):
-                // Calculate remaining days until habit_date
-                $target = DateTime::createFromFormat('Y-m-d', $r['habit_date']);
-                if ($target) {
-                    $diff = (int) $today->diff($target)->format('%r%a'); // signed days
-                    if ($diff > 0) {
-                        $remain_text  = $diff . ' day' . ($diff === 1 ? '' : 's') . ' left';
-                        $remain_style = 'color: var(--theme-primary); font-weight: 500;';
-                    } elseif ($diff === 0) {
-                        $remain_text  = 'Today';
-                        $remain_style = 'color: #b45309; font-weight: 500;';
-                    } else {
-                        $overdue = abs($diff);
-                        $remain_text  = $overdue . ' day' . ($overdue === 1 ? '' : 's') . ' overdue';
-                        $remain_style = 'color: var(--theme-danger); font-weight: 500;';
-                    }
-                } else {
-                    $remain_text  = '-';
-                    $remain_style = 'color: var(--theme-text-muted);';
-                }
-            ?>
+            <?php foreach ($records as $r): ?>
               <tr>
                 <td>
                   <span style="font-size:1.25rem; margin-right:6px; vertical-align:middle;"><?= htmlspecialchars($r['emoji'] ?? '✅') ?></span>
@@ -312,9 +308,20 @@ $success_messages = [
                     <span style="color: var(--theme-text-muted);">Pending</span>
                   <?php endif; ?>
                 </td>
-                <td style="<?= $remain_style ?>"><?= htmlspecialchars($remain_text) ?></td>
                 <td><?= htmlspecialchars($r['habit_date']) ?></td>
                 <td style="white-space:nowrap;">
+                  <!-- Quick toggle: Mark done / Undo -->
+                  <form method="POST" style="display:inline;">
+                    <input type="hidden" name="form_action" value="toggle_status">
+                    <input type="hidden" name="habit_id" value="<?= (int)$r['habit_id'] ?>">
+                    <?php if ($r['completion_status'] === 'Pending'): ?>
+                      <input type="hidden" name="new_status" value="Completed">
+                      <button type="submit" class="btn btn-sm btn-primary" title="Mark as completed">✓ Done</button>
+                    <?php else: ?>
+                      <input type="hidden" name="new_status" value="Pending">
+                      <button type="submit" class="btn btn-sm" title="Mark as pending again">Undo</button>
+                    <?php endif; ?>
+                  </form>
                   <a href="habit_tracker.php?action=edit&id=<?= (int)$r['habit_id'] ?>" class="btn btn-sm">Edit</a>
                   <form method="POST" style="display:inline;" onsubmit="return confirm('Delete this habit record?');">
                     <input type="hidden" name="form_action" value="delete">
@@ -390,7 +397,7 @@ $success_messages = [
         </div>
 
         <div class="form-group">
-          <label>Date</label>
+          <label>Target Date</label>
           <input type="date" name="habit_date" class="form-control"
                  value="<?= htmlspecialchars($form_values['habit_date'] ?? '') ?>" required>
         </div>
