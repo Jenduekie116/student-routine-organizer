@@ -127,6 +127,91 @@ $catalog_list  = array_values($habit_catalog);
 $catalog_count = count($catalog_list);
 $catalog_display = array_slice($catalog_list, 0, 6);
 $catalog_display_count = count($catalog_display);
+
+// ---------------------------------------------------------
+// Money tracker summary for dashboard
+// ---------------------------------------------------------
+$this_month_start = date('Y-m-01');
+$this_month_end   = date('Y-m-t');
+
+$stmt = $conn->prepare(
+    "SELECT
+        COALESCE(SUM(CASE WHEN transaction_type = 'Income' THEN amount ELSE 0 END), 0) AS total_income,
+        COALESCE(SUM(CASE WHEN transaction_type = 'Expense' THEN amount ELSE 0 END), 0) AS total_expense
+     FROM transactions
+     WHERE user_id = ? AND is_deleted = 0 AND transaction_date BETWEEN ? AND ?"
+);
+$stmt->bind_param("iss", $user_id, $this_month_start, $this_month_end);
+$stmt->execute();
+$money_month = $stmt->get_result()->fetch_assoc();
+$money_income = (float)($money_month['total_income'] ?? 0);
+$money_expense = (float)($money_month['total_expense'] ?? 0);
+$money_balance = $money_income - $money_expense;
+
+$stmt = $conn->prepare(
+    "SELECT transaction_type, category, description, amount, transaction_date
+     FROM transactions
+     WHERE user_id = ? AND is_deleted = 0
+     ORDER BY transaction_date DESC, transaction_id DESC
+     LIMIT 4"
+);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$recent_transactions = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+$stmt = $conn->prepare(
+    "SELECT category, SUM(amount) AS total_spent
+     FROM transactions
+     WHERE user_id = ? AND is_deleted = 0 AND transaction_type = 'Expense'
+     GROUP BY category
+     ORDER BY total_spent DESC
+     LIMIT 1"
+);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$top_spending = $stmt->get_result()->fetch_assoc();
+
+$money_chart_start = date('Y-m-d', strtotime('-6 days'));
+$money_chart_end   = date('Y-m-d');
+$stmt = $conn->prepare(
+    "SELECT transaction_date, transaction_type, SUM(amount) AS total_amount
+     FROM transactions
+     WHERE user_id = ? AND is_deleted = 0 AND transaction_date BETWEEN ? AND ?
+     GROUP BY transaction_date, transaction_type
+     ORDER BY transaction_date ASC"
+);
+$stmt->bind_param("iss", $user_id, $money_chart_start, $money_chart_end);
+$stmt->execute();
+$money_chart_rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+$money_chart_labels = [];
+$money_chart_income = [];
+$money_chart_expense = [];
+for ($i = 6; $i >= 0; $i--) {
+    $day = date('Y-m-d', strtotime("-$i days"));
+    $money_chart_labels[] = date('Y-m-d', strtotime($day));
+    $money_chart_income[] = 0;
+    $money_chart_expense[] = 0;
+}
+
+$money_chart_index = [];
+for ($i = 0; $i < count($money_chart_labels); $i++) {
+    $day = date('Y-m-d', strtotime('-' . (6 - $i) . ' days'));
+    $money_chart_index[$day] = $i;
+}
+
+foreach ($money_chart_rows as $row) {
+    $day = $row['transaction_date'];
+    if (!isset($money_chart_index[$day])) {
+        continue;
+    }
+    $index = $money_chart_index[$day];
+    if ($row['transaction_type'] === 'Income') {
+        $money_chart_income[$index] = (float)$row['total_amount'];
+    } elseif ($row['transaction_type'] === 'Expense') {
+        $money_chart_expense[$index] = (float)$row['total_amount'];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -271,6 +356,116 @@ $catalog_display_count = count($catalog_display);
   );
   border: 1px solid #94a3b8;
 }
+
+/* Money summary cards */
+.money-card-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.money-summary-card {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  min-height: 120px;
+}
+.money-chart-panel {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.money-summary-card .icon-chip {
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  margin-bottom: 10px;
+  background: rgba(255,255,255,0.22);
+}
+.money-summary-card .combo-label {
+  font-size: 0.72rem;
+  opacity: 0.85;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+.money-summary-card .combo-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  line-height: 1.15;
+}
+.money-summary-card .combo-sub {
+  font-size: 0.68rem;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+.money-summary-card .money-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 0.72rem;
+  opacity: 0.92;
+}
+.money-summary-card .money-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.16);
+}
+.money-chart-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.money-chart-bars {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 48px;
+}
+.money-chart-bar {
+  flex: 1;
+  border-radius: 999px 999px 4px 4px;
+  min-height: 8px;
+}
+.money-chart-bar.income {
+  background: linear-gradient(180deg, #86efac, #22c55e);
+}
+.money-chart-bar.expense {
+  background: linear-gradient(180deg, #fda4af, #ef4444);
+}
+.money-chart-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.62rem;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+.money-chart-labels span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.money-chart-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.money-chart-dot.income { background: #22c55e; }
+.money-chart-dot.expense { background: #ef4444; }
 
 /* Blank placeholder cards */
 .snapshot-placeholder {
@@ -465,8 +660,23 @@ $catalog_display_count = count($catalog_display);
         </div>
       </div>
 
-      <!-- 3. Placeholder -->
-      <div class="snapshot-placeholder">Coming soon</div>
+      <!-- 3. Money summary -->
+      <div class="money-card-stack">
+        <div class="money-summary-card">
+          <div class="icon-chip">💵</div>
+          <div class="combo-label">Monthly net balance</div>
+          <div class="combo-value">RM <?= number_format($money_balance, 2) ?></div>
+          <div class="money-row">
+            <span class="money-pill">📈 Income: RM <?= number_format($money_income, 2) ?></span>
+            <?php if ($top_spending): ?>
+              <span class="money-pill">🏷️ Top expense: <?= htmlspecialchars($top_spending['category']) ?></span>
+            <?php else: ?>
+              <span class="money-pill">🏷️ No expenses yet</span>
+            <?php endif; ?>
+          </div>
+        </div>
+
+      </div>
 
       <!-- 4. Placeholder -->
       <div class="snapshot-placeholder">Coming soon</div>
@@ -507,6 +717,32 @@ $catalog_display_count = count($catalog_display);
             <?php endif; ?>
           </div>
         </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <div class="section-title-row">
+          <h2>💰 Recent money activity</h2>
+        </div>
+        <?php if (empty($recent_transactions)): ?>
+          <p class="text-muted" style="margin:0; font-size:0.85rem;">No money transactions yet.</p>
+        <?php else: ?>
+          <?php foreach ($recent_transactions as $t): ?>
+            <div class="mini-activity-item">
+              <span class="badge"><?= htmlspecialchars($t['category']) ?></span>
+              <span class="text-muted"><?= htmlspecialchars($t['transaction_date']) ?></span>
+              <span class="<?= $t['transaction_type'] === 'Income' ? 'trend-up' : 'trend-down' ?>">
+                <?= $t['transaction_type'] === 'Income' ? '+' : '-' ?>RM <?= number_format((float)$t['amount'], 2) ?>
+              </span>
+            </div>
+          <?php endforeach; ?>
+        <?php endif; ?>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <div class="section-title-row">
+          <h2>📈 Money analytics</h2>
+        </div>
+        <canvas id="moneyAnalyticsChart" style="margin-top:10px;"></canvas>
       </div>
 
       <!-- Habit List + This Week -->
@@ -608,6 +844,40 @@ if (ctx) {
     options: {
       responsive: true,
       plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#eef0f4' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+const moneyCtx = document.getElementById('moneyAnalyticsChart');
+if (moneyCtx) {
+  new Chart(moneyCtx, {
+    type: 'bar',
+    data: {
+      labels: <?= json_encode($money_chart_labels) ?>,
+      datasets: [
+        {
+          label: 'Income',
+          data: <?= json_encode($money_chart_income) ?>,
+          backgroundColor: '#22c55e',
+          borderRadius: 6,
+          maxBarThickness: 24
+        },
+        {
+          label: 'Expense',
+          data: <?= json_encode($money_chart_expense) ?>,
+          backgroundColor: '#ef4444',
+          borderRadius: 6,
+          maxBarThickness: 24
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } },
       scales: {
         y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#eef0f4' } },
         x: { grid: { display: false } }
