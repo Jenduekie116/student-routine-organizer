@@ -397,7 +397,7 @@ $success_messages = [
         </div>
 
         <div class="form-group">
-          <label>Target Date</label>
+          <label>Date</label>
           <input type="date" name="habit_date" class="form-control"
                  value="<?= htmlspecialchars($form_values['habit_date'] ?? '') ?>" required>
         </div>
