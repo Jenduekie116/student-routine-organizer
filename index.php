@@ -212,6 +212,26 @@ foreach ($money_chart_rows as $row) {
         $money_chart_expense[$index] = (float)$row['total_amount'];
     }
 }
+//=============================================
+// Diary Journal summary for dashboard overview card
+//=============================================
+
+$journal_count_stmt = $conn->prepare("SELECT COUNT(*) as total FROM journal_entries WHERE user_id = ?");
+$journal_count_stmt->bind_param("i", $user_id);
+$journal_count_stmt->execute();
+$total_entries = $journal_count_stmt->get_result()->fetch_assoc()['total'];
+$journal_count_stmt->close();
+
+// Get the most frequent mood for the dashboard overview card
+$freq_mood_stmt = $conn->prepare("SELECT mood AS mood_status, COUNT(*) as count FROM journal_entries WHERE user_id = ? GROUP BY mood ORDER BY count DESC LIMIT 1");
+$freq_mood_stmt->bind_param("i", $user_id);
+$freq_mood_stmt->execute();
+$freq_mood_res = $freq_mood_stmt->get_result()->fetch_assoc();
+$frequent_mood = $freq_mood_res ? $freq_mood_res['mood_status'] : 'None yet';
+$freq_mood_stmt->close();
+
+// Determine module status text for dashboard
+$module_status = ($total_entries > 0) ? "Active ✨" : "No entries yet 📝";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -678,8 +698,32 @@ foreach ($money_chart_rows as $row) {
 
       </div>
 
-      <!-- 4. Placeholder -->
-      <div class="snapshot-placeholder">Coming soon</div>
+      
+      <!-- 4. Diary Journal Overview  -->
+      <a href="view_journals.php" style="text-decoration: none; color: inherit; display: block; height: 100%;">
+        <div style="background-color: #86efac; border-radius: 16px; padding: 20px; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06); height: 100%; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;">
+          
+          <div>
+            <div style="font-size: 13px; font-weight: 600; color: #166534; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+              Diary Journal
+            </div>
+            <div style="font-size: 28px; font-weight: 700; color: #14532d; margin-bottom: 4px;">
+              <?= $total_entries ?? 0 ?> Entries
+            </div>
+            <div style="font-size: 13px; color: #166534; display: flex; align-items: center; gap: 6px;">
+              <span>Frequent:</span>
+              <span style="font-weight: 600;"><?= htmlspecialchars($frequent_mood ?? 'None') ?></span>
+            </div>
+          </div>
+
+          <div style="margin-top: 14px;">
+            <span style="display: inline-block; background-color: rgba(22, 101, 52, 0.1); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; color: #166534;">
+              <?= $module_status ?? 'No entries yet' ?>
+            </span>
+          </div>
+
+        </div>
+      </a>
     </div>
 
     <?php if (!$has_any_records && $catalog_display_count === 0): ?>
