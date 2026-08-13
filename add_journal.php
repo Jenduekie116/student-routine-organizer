@@ -37,6 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Journal Entry - Routine Organizer</title>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
     <style>
         :root {
             --bg-color: #f8fafc;
@@ -155,9 +156,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </style>
 </head>
 <body>
+    <div class="app-layout">
+    <?php include 'sidebar.php'; ?>
 
-    <!-- Main Form Card Area -->
-    <div class="container" style="max-width: 1000px; margin: 40px auto; padding: 0 20px;">
+    <div class="main-content">
+        <div class="container">
         <div class="form-container" style="background-color: var(--card-bg); border-radius: 16px; padding: 35px 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
             
             <div class="form-header" style="margin-bottom: 30px;">

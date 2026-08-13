@@ -4,9 +4,12 @@ require 'database.php';
 
 $user_id = $_SESSION['user_id'];
 
-// Get search and filter inputs
+// Get search, mood filter, and date range filter inputs
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $mood_filter = isset($_GET['mood_filter']) ? trim($_GET['mood_filter']) : '';
+$date_range = isset($_GET['date_range']) ? trim($_GET['date_range']) : '';
+$start_date = isset($_GET['start_date']) ? trim($_GET['start_date']) : '';
+$end_date = isset($_GET['end_date']) ? trim($_GET['end_date']) : '';
 
 // Build the SQL query dynamically using correct column names from your database schema
 $sql = "SELECT journal_id, title, content, mood AS mood_status, entry_date AS date, created_at FROM journal_entries WHERE user_id = ?";
@@ -26,6 +29,58 @@ if (!empty($mood_filter)) {
     $params[] = $mood_filter;
     $types .= "s";
 }
+
+// Append Date Preset Filters using the entry_date column
+// Date Range logic including custom range support
+if (!empty($date_range)) {
+    $today = date('Y-m-d');
+    switch ($date_range) {
+        case 'today':
+            $sql .= " AND entry_date = ?";
+            $params[] = $today;
+            $types .= "s";
+            break;
+        case 'yesterday':
+            $yesterday = date('Y-m-d', strtotime('-1 day'));
+            $sql .= " AND entry_date = ?";
+            $params[] = $yesterday;
+            $types .= "s";
+            break;
+        case 'last_7':
+            $past_date = date('Y-m-d', strtotime('-7 days'));
+            $sql .= " AND entry_date >= ?";
+            $params[] = $past_date;
+            $types .= "s";
+            break;
+        case 'last_30':
+            $past_date = date('Y-m-d', strtotime('-30 days'));
+            $sql .= " AND entry_date >= ?";
+            $params[] = $past_date;
+            $types .= "s";
+            break;
+        case 'last_90':
+            $past_date = date('Y-m-d', strtotime('-90 days'));
+            $sql .= " AND entry_date >= ?";
+            $params[] = $past_date;
+            $types .= "s";
+            break;
+        case 'last_year':
+            $past_date = date('Y-m-d', strtotime('-1 year'));
+            $sql .= " AND entry_date >= ?";
+            $params[] = $past_date;
+            $types .= "s";
+            break;
+        case 'custom':
+            if (!empty($start_date) && !empty($end_date)) {
+                $sql .= " AND entry_date BETWEEN ? AND ?";
+                $params[] = $start_date;
+                $params[] = $end_date;
+                $types .= "ss";
+            }
+            break;
+    }
+}
+
 
 $sql .= " ORDER BY entry_date DESC";
 
@@ -83,17 +138,17 @@ function getMoodColor($mood)
 {
     switch (strtolower($mood)) {
         case 'happy':
-            return ['bg' => '#dcfce7', 'text' => '#166534']; // Soft Green
+            return ['bg' => '#22c55e', 'text' => '#ffffff']; // Solid Green
         case 'excited':
-            return ['bg' => '#fef9c3', 'text' => '#854d0e']; // Soft Yellow
+            return ['bg' => '#f59e0b', 'text' => '#ffffff']; // Solid Yellow/Amber
         case 'sad':
-            return ['bg' => '#e0f2fe', 'text' => '#0369a1']; // Soft Blue
+            return ['bg' => '#3b82f6', 'text' => '#ffffff']; // Solid Blue
         case 'anxious':
-            return ['bg' => '#fee2e2', 'text' => '#991b1b']; // Soft Red
+            return ['bg' => '#f97316', 'text' => '#ffffff']; // Solid Red
         case 'neutral':
-            return ['bg' => '#f1f5f9', 'text' => '#475569']; // Soft Gray
+            return ['bg' => '#64748b', 'text' => '#ffffff']; // Solid Slate Gray
         default:
-            return ['bg' => '#f8fafc', 'text' => 'var(--text-main)']; // Default fallback
+            return ['bg' => '#0f172a', 'text' => '#ffffff']; // Default fallback
     }
 }
 
@@ -103,17 +158,17 @@ function getMoodData($mood)
 {
     switch (strtolower($mood)) {
         case 'happy':
-            return ['bg' => '#dcfce7', 'text' => '#166534', 'emoji' => '😊'];
+            return ['bg' => '#22c55e', 'text' => '#ffffff', 'emoji' => '😊'];
         case 'excited':
-            return ['bg' => '#fef9c3', 'text' => '#854d0e', 'emoji' => '😆'];
+            return ['bg' => '#f59e0b', 'text' => '#ffffff', 'emoji' => '😆'];
         case 'sad':
-            return ['bg' => '#e0f2fe', 'text' => '#0369a1', 'emoji' => '🥲'];
+            return ['bg' => '#3b82f6', 'text' => '#ffffff', 'emoji' => '🥲'];
         case 'anxious':
-            return ['bg' => '#fee2e2', 'text' => '#991b1b', 'emoji' => '😰'];
+            return ['bg' => '#f97316', 'text' => '#ffffff', 'emoji' => '😰'];
         case 'neutral':
-            return ['bg' => '#f1f5f9', 'text' => '#475569', 'emoji' => '😐'];
+            return ['bg' => '#64748b', 'text' => '#ffffff', 'emoji' => '😐'];
         default:
-            return ['bg' => '#f8fafc', 'text' => 'var(--text-main)', 'emoji' => '📊'];
+            return ['bg' => '#0f172a', 'text' => '#ffffff', 'emoji' => '📊'];
     }
 }
 
@@ -532,259 +587,281 @@ $mood_data = getMoodData($frequent_mood);
 
 <body>
     <div class="app-layout">
-  <?php include 'sidebar.php'; ?>
-  <div class="main-content">
-  <div class="container"></div>
+        <?php include 'sidebar.php'; ?>
+        <div class="main-content">
 
-    <!-- Top Navigation Bar -->
-    <div class="navbar">
-        <div class="layout-container navbar-content">
-            <div class="navbar-brand">
-                <div class="brand-logo"></div>
-                <span>Routine Organizer</span>
-            </div>
+            <div class="container">
 
-            <div class="nav-pill-container">
-                <a href="#">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="14" width="7" height="7"></rect>
-                        <rect x="3" y="14" width="7" height="7"></rect>
-                    </svg>
-                    Dashboard
-                </a>
-                <a href="#">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-                        <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-                        <line x1="6" y1="1" x2="6" y2="4"></line>
-                        <line x1="10" y1="1" x2="10" y2="4"></line>
-                        <line x1="14" y1="1" x2="14" y2="4"></line>
-                    </svg>
-                    Exercise
-                </a>
-                <a href="view_journals.php" class="active">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
-                        <path d="M6 6h10"></path>
-                        <path d="M6 10h10"></path>
-                    </svg>
-                    Diary Journal
-                </a>
-                <a href="#">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="1" x2="12" y2="23"></line>
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                    </svg>
-                    Money Tracker
-                </a>
-                <a href="#">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9 11 12 14 22 4"></polyline>
-                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                    </svg>
-                    Habit Tracker
-                </a>
-            </div>
-
-            <div class="navbar-right">
-                <!-- Search Icon -->
-                <button class="icon-btn" title="Search">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                </button>
-
-                <!-- Notification Icon with indicator dot -->
-                <button class="icon-btn" title="Notifications" style="position: relative;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                    </svg>
-                    <span
-                        style="position: absolute; top: 8px; right: 8px; width: 6px; height: 6px; background-color: #ef4444; border-radius: 50%;"></span>
-                </button>
-
-                <div class="profile-pill">
-                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" alt="Profile">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-        <div class="container">
-
-            <!-- Header Title & Action -->
-            <div class="header-section">
-                <div>
-                    <h1>Diary Journal Overview</h1>
-                    <p style="color: var(--text-muted); margin: 5px 0 0 0;">Record and reflect on your daily experiences
-                        and
-                        moods.</p>
-                </div>
-                <a href="add_journal.php" class="btn-primary"
-                    style="display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px 10px 10px;">
-                    <span
-                        style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; background-color: rgba(157, 232, 111); border-radius: 50%; flex-shrink: 0; color: #000000;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                    </span>
-                    Add New Entry
-                </a>
-            </div>
-
-            <!-- Success Notifications -->
-            <?php if (isset($_GET['success'])): ?>
-                <div class="alert-success">Journal entry added successfully!</div>
-            <?php elseif (isset($_GET['updated'])): ?>
-                <div class="alert-success">Journal entry updated successfully!</div>
-            <?php elseif (isset($_GET['deleted'])): ?>
-                <div class="alert-success">Journal entry deleted successfully!</div>
-            <?php endif; ?>
-
-            <!-- Summary Cards Row (3 Columns) -->
-            <div class="cards-grid" style="grid-template-columns: repeat(3, 1fr);">
-                <div class="card highlight">
-                    <h3>Total Journal Entries</h3>
-                    <p class="metric"><?php echo $total_entries; ?></p>
+                <!-- Header Title & Action -->
+                <div class="header-section">
+                    <div>
+                        <h1>Diary Journal Overview</h1>
+                        <p style="color: var(--text-muted); margin: 5px 0 0 0;">Record and reflect on your daily
+                            experiences
+                            and
+                            moods.</p>
+                    </div>
+                    <a href="add_journal.php" class="btn-primary"
+                        style="display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px 10px 10px;">
+                        <span
+                            style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; background-color: rgba(157, 232, 111); border-radius: 50%; flex-shrink: 0; color: #000000;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </span>
+                        Add New Entry
+                    </a>
                 </div>
 
-                <div class="card"
-                    style="background-color: <?php echo $mood_data['bg']; ?>; transition: background-color 0.3s ease;">
-                    <h3 style="color: <?php echo $mood_data['text']; ?>; opacity: 0.8;">Most Frequent Mood</h3>
-                    <p class="metric"
-                        style="color: <?php echo $mood_data['text']; ?>; margin-top: 5px; display: flex; align-items: center; gap: 10px;">
-                        <span><?php echo $mood_data['emoji']; ?></span>
-                        <span><?php echo htmlspecialchars($frequent_mood); ?></span>
-                    </p>
+                <!-- Success Notifications -->
+                <?php if (isset($_GET['success'])): ?>
+                    <div class="alert-success">Journal entry added successfully!</div>
+                <?php elseif (isset($_GET['updated'])): ?>
+                    <div class="alert-success">Journal entry updated successfully!</div>
+                <?php elseif (isset($_GET['deleted'])): ?>
+                    <div class="alert-success">Journal entry deleted successfully!</div>
+                <?php endif; ?>
+
+                <!-- Summary Cards Row (3 Columns) -->
+                <div class="cards-grid" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="card highlight">
+                        <h3>Total Journal Entries</h3>
+                        <p class="metric"><?php echo $total_entries; ?></p>
+                    </div>
+
+                    <div class="card"
+                        style="background-color: <?php echo $mood_data['bg']; ?>; transition: background-color 0.3s ease;">
+                        <h3 style="color: <?php echo $mood_data['text']; ?>; opacity: 0.8;">Most Frequent Mood</h3>
+                        <p class="metric"
+                            style="color: <?php echo $mood_data['text']; ?>; margin-top: 5px; display: flex; align-items: center; gap: 10px;">
+                            <span><?php echo $mood_data['emoji']; ?></span>
+                            <span><?php echo htmlspecialchars($frequent_mood); ?></span>
+                        </p>
+                    </div>
+
+                    <div class="card"
+                        style="background-color: <?php echo $status_bg; ?>; transition: background-color 0.3s ease;">
+                        <h3 style="color: <?php echo $status_color; ?>; opacity: 0.8;">Module Status</h3>
+                        <p class="metric"
+                            style="font-size: 20px; color: <?php echo $status_color; ?>; margin-top: 5px; font-weight: 700;">
+                            <?php echo $module_status; ?>
+                        </p>
+                    </div>
                 </div>
 
-                <div class="card"
-                    style="background-color: <?php echo $status_bg; ?>; transition: background-color 0.3s ease;">
-                    <h3 style="color: <?php echo $status_color; ?>; opacity: 0.8;">Module Status</h3>
-                    <p class="metric"
-                        style="font-size: 20px; color: <?php echo $status_color; ?>; margin-top: 5px; font-weight: 700;">
-                        <?php echo $module_status; ?>
-                    </p>
-                </div>
-            </div>
+                <!-- Search and Filter Toolbar -->
+                <form method="GET" action="" class="toolbar">
+                    <input type="text" name="search" placeholder="Search by title or content..."
+                        value="<?php echo htmlspecialchars($search); ?>">
 
-            <!-- Search and Filter Toolbar -->
-            <form method="GET" action="" class="toolbar">
-                <input type="text" name="search" placeholder="Search by title or content..."
-                    value="<?php echo htmlspecialchars($search); ?>">
+                    <select name="mood_filter">
+                        <option value="">All Moods</option>
+                        <option value="Happy" <?php if ($mood_filter == 'Happy')
+                            echo 'selected'; ?>>Happy</option>
+                        <option value="Sad" <?php if ($mood_filter == 'Sad')
+                            echo 'selected'; ?>>Sad</option>
+                        <option value="Excited" <?php if ($mood_filter == 'Excited')
+                            echo 'selected'; ?>>Excited
+                        </option>
+                        <option value="Anxious" <?php if ($mood_filter == 'Anxious')
+                            echo 'selected'; ?>>Anxious
+                        </option>
+                        <option value="Neutral" <?php if ($mood_filter == 'Neutral')
+                            echo 'selected'; ?>>Neutral
+                        </option>
+                    </select>
 
-                <select name="mood_filter">
-                    <option value="">All Moods</option>
-                    <option value="Happy" <?php if ($mood_filter == 'Happy')
-                        echo 'selected'; ?>>Happy</option>
-                    <option value="Sad" <?php if ($mood_filter == 'Sad')
-                        echo 'selected'; ?>>Sad</option>
-                    <option value="Excited" <?php if ($mood_filter == 'Excited')
-                        echo 'selected'; ?>>Excited</option>
-                    <option value="Anxious" <?php if ($mood_filter == 'Anxious')
-                        echo 'selected'; ?>>Anxious</option>
-                    <option value="Neutral" <?php if ($mood_filter == 'Neutral')
-                        echo 'selected'; ?>>Neutral</option>
-                </select>
+                    <!-- Date Range Preset Filter with Onchange Trigger -->
+                    <select name="date_range" id="dateRangeSelect" onchange="toggleCustomDates(this.value)">
+                        <option value="">All Time</option>
+                        <option value="today" <?php if (isset($selected_date_range) && $selected_date_range == 'today')
+                            echo 'selected'; ?>>Today</option>
+                        <option value="yesterday" <?php if (isset($selected_date_range) && $selected_date_range == 'yesterday')
+                            echo 'selected'; ?>>Yesterday</option>
+                        <option value="last_7" <?php if (isset($selected_date_range) && $selected_date_range == 'last_7')
+                            echo 'selected'; ?>>Last 7 Days</option>
+                        <option value="last_30" <?php if (isset($selected_date_range) && $selected_date_range == 'last_30')
+                            echo 'selected'; ?>>Last 30 Days</option>
+                        <option value="last_90" <?php if (isset($selected_date_range) && $selected_date_range == 'last_90')
+                            echo 'selected'; ?>>Last 90 Days</option>
+                        <option value="last_year" <?php if (isset($selected_date_range) && $selected_date_range == 'last_year')
+                            echo 'selected'; ?>>Last 1 Year</option>
+                        <option value="custom" <?php if (isset($date_range) && $date_range == 'custom')
+                            echo 'selected'; ?>>Custom Range</option>
+                    </select>
 
-                <button type="submit" class="btn-primary btn-icon-wrapper" style="border: none; cursor: pointer;">
-                    <span class="icon-circle">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                        </svg>
-                    </span>
-                    Filter
-                </button>
+                    <!-- Custom Date Inputs (Show/Hide dynamically) -->
+                    <div id="custom-date-inputs"
+                        style="display: <?php echo (isset($date_range) && $date_range == 'custom') ? 'flex' : 'none'; ?>; gap: 8px; align-items: center;">
+                        <input type="date" name="start_date"
+                            value="<?php echo htmlspecialchars($_GET['start_date'] ?? ''); ?>"
+                            style="padding: 8px 12px; border-radius: 12px; border: 1px solid var(--border-color); background: #f8fafc; font-family: 'Manrope', sans-serif; font-size: 13px;">
+                        <span style="color: var(--text-muted); font-size: 13px;">to</span>
+                        <input type="date" name="end_date"
+                            value="<?php echo htmlspecialchars($_GET['end_date'] ?? ''); ?>"
+                            style="padding: 8px 12px; border-radius: 12px; border: 1px solid var(--border-color); background: #f8fafc; font-family: 'Manrope', sans-serif; font-size: 13px;">
+                    </div>
 
-                <a href="view_journals.php" style="text-decoration: none;">
-                    <button type="button" class="btn-secondary btn-reset"
-                        style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border-radius: 30px;">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                        Reset
+                    <a href="diary_journal.php" style="text-decoration: none;">
+                        <button type="button" class="btn-secondary btn-reset"
+                            style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border-radius: 30px;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                            Reset
+                        </button>
+                    </a>
+
+                    <button type="submit" class="btn-primary btn-icon-wrapper" style="border: none; cursor: pointer;">
+                        <span class="icon-circle">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                            </svg>
+                        </span>
+                        Filter
                     </button>
-                </a>
-            </form>
 
-            <!-- Main Data Table Card -->
-            <div class="table-card">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Title</th>
-                            <th>Mood Status</th>
-                            <th>Content Preview</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if ($result->num_rows > 0): ?>
-                            <?php while ($row = $result->fetch_assoc()):
-                                $mood_status = $row['mood_status'] ?? 'Neutral';
-                                $mood_info = getMoodData($mood_status);
-                                $entry_date = $row['entry_date'] ?? ($row['date'] ?? ($row['created_at'] ?? ''));
-                                $content_text = $row['content_preview'] ?? ($row['content'] ?? ($row['body'] ?? ''));
-                                ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($entry_date); ?></td>
-                                    <td style="font-weight: 600; color: var(--text-main);">
-                                        <?php echo htmlspecialchars($row['title']); ?>
-                                    </td>
-                                    <td>
-                                        <span
-                                            style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; background-color: <?php echo $mood_info['bg']; ?>; color: <?php echo $mood_info['text']; ?>; font-size: 13px; font-weight: 500;">
-                                            <span><?php echo $mood_info['emoji']; ?></span>
-                                            <span><?php echo htmlspecialchars($mood_status); ?></span>
-                                        </span>
-                                    </td>
-                                    <td style="color: var(--text-muted);">
-                                        <?php echo htmlspecialchars(substr($content_text, 0, 50)) . '...'; ?>
-                                    </td>
-                                    <td>
-                                        <?php
-                                        // Safely find the correct primary key name from the row
-                                        $entry_id = $row['id'] ?? ($row['journal_id'] ?? ($row['entry_id'] ?? 0));
-                                        $edit_url = "edit_journal.php?id=" . $entry_id;
-                                        $delete_url = "delete_journal.php?id=" . $entry_id;
-                                        ?>
-                                        <a href="<?php echo $edit_url; ?>"
-                                            style="color: #2563eb; text-decoration: none; margin-right: 10px; font-weight: 500;">Edit</a>
-                                        <a href="<?php echo $delete_url; ?>"
-                                            style="color: #ef4444; text-decoration: none; font-weight: 500;"
-                                            onclick="return confirm('Are you sure you want to delete this entry?');">Delete</a>
-                                    </td>
-                                </tr>
-                            <?php endwhile; ?>
-                        <?php else: ?>
+
+                </form>
+
+                <script>
+                    function toggleCustomDates(value) {
+                        const customDiv = document.getElementById('custom-date-inputs');
+                        if (value === 'custom') {
+                            customDiv.style.display = 'flex';
+                        } else {
+                            customDiv.style.display = 'none';
+                        }
+                    }
+                </script>
+
+                <!-- Main Data Table Card -->
+                <div class="table-card">
+                    <table>
+                        <thead>
                             <tr>
-                                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">No
-                                    journal
-                                    entries found.</td>
+                                <th>Date</th>
+                                <th>Title</th>
+                                <th>Mood Status</th>
+                                <th>Content Preview</th>
+                                <th>Actions</th>
                             </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php if ($result->num_rows > 0): ?>
+                                <?php while ($row = $result->fetch_assoc()):
+                                    $mood_status = $row['mood_status'] ?? 'Neutral';
+                                    $mood_info = getMoodData($mood_status);
+                                    $entry_date = $row['entry_date'] ?? ($row['date'] ?? ($row['created_at'] ?? ''));
+                                    $content_text = $row['content_preview'] ?? ($row['content'] ?? ($row['body'] ?? ''));
+
+                                    // Safely find the correct primary key name from the row
+                                    $entry_id = $row['id'] ?? ($row['journal_id'] ?? ($row['entry_id'] ?? 0));
+                                    $edit_url = "edit_journal.php?id=" . $entry_id;
+                                    $delete_url = "delete_journal.php?id=" . $entry_id;
+                                    $row_unique_id = "journal-row-" . $entry_id;
+                                    ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($entry_date); ?></td>
+                                        <td style="font-weight: 600; color: var(--text-main);">
+                                            <?php echo htmlspecialchars($row['title']); ?>
+                                        </td>
+                                        <td>
+                                            <span
+                                                style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; background-color: <?php echo $mood_info['bg']; ?>; color: <?php echo $mood_info['text']; ?>; font-size: 13px; font-weight: 500;">
+                                                <span><?php echo $mood_info['emoji']; ?></span>
+                                                <span><?php echo htmlspecialchars($mood_status); ?></span>
+                                            </span>
+                                        </td>
+                                        <td style="color: var(--text-muted);">
+                                            <?php echo htmlspecialchars(substr($content_text, 0, 50)) . '...'; ?>
+                                        </td>
+                                        <td style="white-space: nowrap;">
+                                            <!-- View / Toggle Icon -->
+                                            <a href="#" onclick="toggleRow(event, '<?php echo $row_unique_id; ?>', this)"
+                                                title="View Full Content"
+                                                style="color: #0369a1; background: #e0f2fe; padding: 6px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; margin-right: 6px; transition: all 0.2s;">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                </svg>
+                                            </a>
+
+                                            <!-- Edit Icon -->
+                                            <a href="<?php echo $edit_url; ?>" title="Edit Entry"
+                                                style="color: #1e40af; background: #dbeafe; padding: 6px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; margin-right: 6px; transition: all 0.2s;">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </a>
+
+                                            <!-- Delete Icon -->
+                                            <a href="<?php echo $delete_url; ?>" title="Delete Entry"
+                                                style="color: #991b1b; background: #fee2e2; padding: 6px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s;"
+                                                onclick="return confirm('Are you sure you want to delete this entry?');">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                    <path
+                                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                    </path>
+                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Hidden Expandable Row for Full Content -->
+                                    <tr id="<?php echo $row_unique_id; ?>" style="display: none; background-color: #f8fafc;">
+                                        <td colspan="5"
+                                            style="padding: 20px 25px; color: var(--text-main); border-bottom: 1px solid var(--border-color);">
+                                            <div
+                                                style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 0.5px;">
+                                                Full Reflection Content</div>
+                                            <p style="margin: 0; line-height: 1.6; white-space: pre-line; font-size: 14px;">
+                                                <?php echo htmlspecialchars($content_text); ?>
+                                            </p>
+                                        </td>
+                                    </tr>
+
+                                <?php endwhile; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">No
+                                        journal
+                                        entries found.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- JavaScript to handle dropdown expand/collapse toggle -->
+                <script>
+                    function toggleRow(event, rowId, element) {
+                        event.preventDefault();
+                        const row = document.getElementById(rowId);
+                        if (row.style.display === 'none') {
+                            row.style.display = 'table-row';
+                            element.style.backgroundColor = '#bae6fd'; // Darker blue when active
+                        } else {
+                            row.style.display = 'none';
+                            element.style.backgroundColor = '#e0f2fe'; // Original soft blue
+                        }
+                    }
+                </script>
             </div>
 
         </div>

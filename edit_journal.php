@@ -3,41 +3,49 @@ require 'auth_guard.php';
 require 'database.php';
 
 
-$user_id = $_SESSION['user_id'];
-$entry_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
 
-// Fetch the existing entry and ensure it belongs to the logged-in user (updated `entry_id` to `journal_id`)
-$stmt = $conn->prepare("SELECT * FROM journal_entries WHERE journal_id = ? AND user_id = ?");
-$stmt->bind_param("ii", $entry_id, $user_id);
+$user_id = $_SESSION['user_id'];
+$journal_id = $_GET['id'] ?? 0;
+
+// 1. Fetch existing entry data when the page loads
+$stmt = $conn->prepare("SELECT title, content, mood, entry_date FROM journal_entries WHERE journal_id = ? AND user_id = ?");
+$stmt->bind_param("ii", $journal_id, $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
-if ($result->num_rows == 0) {
-    die("Entry not found or unauthorized access.");
+if ($result->num_rows === 0) {
+    // If entry doesn't exist or doesn't belong to the user, redirect back
+    header("Location: view_journals.php");
+    exit();
 }
 
-$entry = $result->fetch_assoc();
+$row = $result->fetch_assoc();
+$title = $row['title'];
+$content = $row['content'];
+$mood_status = $row['mood'];
+$date = $row['entry_date'];
 $stmt->close();
 
-// Handle form submission for updates
+// 2. Handle form submission when updating the entry
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $title = trim($_POST['title'] ?? '');
-    $content = trim($_POST['content'] ?? '');
-    // Updated to match your database column `mood` and handle possible form names
-    $mood = trim($_POST['mood'] ?? ($_POST['mood_status'] ?? '')); 
-    // Updated to match your database column `entry_date` and handle possible form names
-    $entry_date = $_POST['entry_date'] ?? ($_POST['date'] ?? ''); 
+    $title = trim($_POST['title']);
+    $content = trim($_POST['content']);
+    $mood_status = $_POST['mood_status'];
+    $date = $_POST['date'];
 
-    if (!empty($title) && !empty($content) && !empty($mood) && !empty($entry_date)) {
-        // Updated UPDATE query to use `mood`, `entry_date`, and `journal_id` matching your database schema
+    if (!empty($title) && !empty($content) && !empty($mood_status) && !empty($date)) {
         $update_stmt = $conn->prepare("UPDATE journal_entries SET title = ?, content = ?, mood = ?, entry_date = ? WHERE journal_id = ? AND user_id = ?");
-        $update_stmt->bind_param("ssssii", $title, $content, $mood, $entry_date, $entry_id, $user_id);
+        $update_stmt->bind_param("ssssii", $title, $content, $mood_status, $date, $journal_id, $user_id);
         
         if ($update_stmt->execute()) {
-            header("Location: diary_journal.php?updated=1");
+            header("Location: view_journals.php?success=updated");
             exit();
         } else {
-            $error = "Error updating entry. Please try again.";
+            $error = "Error updating entry.";
         }
         $update_stmt->close();
     } else {
@@ -53,6 +61,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Journal Entry - Routine Organizer</title>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
     <style>
         :root {
             --bg-color: #f8fafc;
@@ -171,9 +180,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </style>
 </head>
 <body>
+    <div class="app-layout">
+    <?php include 'sidebar.php'; ?>
 
-    <!-- Main Form Card Area -->
-    <div class="container" style="max-width: 1000px; margin: 40px auto; padding: 0 20px;">
+    <div class="main-content">
+        <div class="container">
         <div class="form-container" style="background-color: var(--card-bg); border-radius: 16px; padding: 35px 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
             
             <div class="form-header" style="margin-bottom: 30px;">
