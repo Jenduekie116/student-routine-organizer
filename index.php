@@ -212,17 +212,22 @@ foreach ($money_chart_rows as $row) {
         $money_chart_expense[$index] = (float)$row['total_amount'];
     }
 }
-//=============================================
-// Diary Journal summary for dashboard overview card
-//=============================================
 
+// =============================================
+// Diary Journal summary for dashboard & calendar
+// =============================================
 $journal_count_stmt = $conn->prepare("SELECT COUNT(*) as total FROM journal_entries WHERE user_id = ?");
 $journal_count_stmt->bind_param("i", $user_id);
 $journal_count_stmt->execute();
 $total_entries = $journal_count_stmt->get_result()->fetch_assoc()['total'];
 $journal_count_stmt->close();
 
-// Get the most frequent mood for the dashboard overview card
+$recent_journal_stmt = $conn->prepare("SELECT title, mood, entry_date FROM journal_entries WHERE user_id = ? ORDER BY entry_date DESC LIMIT 4");
+$recent_journal_stmt->bind_param("i", $user_id);
+$recent_journal_stmt->execute();
+$recent_journals = $recent_journal_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$recent_journal_stmt->close();
+
 $freq_mood_stmt = $conn->prepare("SELECT mood AS mood_status, COUNT(*) as count FROM journal_entries WHERE user_id = ? GROUP BY mood ORDER BY count DESC LIMIT 1");
 $freq_mood_stmt->bind_param("i", $user_id);
 $freq_mood_stmt->execute();
@@ -230,7 +235,27 @@ $freq_mood_res = $freq_mood_stmt->get_result()->fetch_assoc();
 $frequent_mood = $freq_mood_res ? $freq_mood_res['mood_status'] : 'None yet';
 $freq_mood_stmt->close();
 
-// Determine module status text for dashboard
+// Calendar variables
+$cal_year = isset($_GET['y']) ? (int)$_GET['y'] : date('Y');
+$cal_month = isset($_GET['m']) ? (int)$_GET['m'] : date('m');
+
+$days_in_month = cal_days_in_month(CAL_GREGORIAN, $cal_month, $cal_year);
+$first_day_of_week = date('N', strtotime("$cal_year-$cal_month-01"));
+
+$month_start = "$cal_year-$cal_month-01";
+$month_end = "$cal_year-$cal_month-$days_in_month";
+
+$cal_stmt = $conn->prepare("SELECT * FROM journal_entries WHERE user_id = ? AND entry_date BETWEEN ? AND ?");
+$cal_stmt->bind_param("iss", $user_id, $month_start, $month_end);
+$cal_stmt->execute();
+$cal_result = $cal_stmt->get_result();
+
+$entries_by_date = [];
+while ($row = $cal_result->fetch_assoc()) {
+    $entries_by_date[$row['entry_date']] = $row;
+}
+$cal_stmt->close();
+
 $module_status = ($total_entries > 0) ? "Active ✨" : "No entries yet 📝";
 ?>
 <!DOCTYPE html>
@@ -787,6 +812,106 @@ $module_status = ($total_entries > 0) ? "Active ✨" : "No entries yet 📝";
           <h2>📈 Money analytics</h2>
         </div>
         <canvas id="moneyAnalyticsChart" style="margin-top:10px;"></canvas>
+      </div>
+
+     <!-- ===================== COMBINED JOURNAL SECTION (List + Calendar) ===================== -->
+      <div class="dashboard-row" style="margin-top: 16px;">
+        
+        <!-- Left: Recent Journal Entries List -->
+        <div class="card" style="margin-top: 0; height: 100%;">
+          <div class="section-title-row">
+            <h2>📖 Recent journal entries</h2>
+          </div>
+          <?php if (empty($recent_journals)): ?>
+            <p class="text-muted" style="margin:0; font-size:0.85rem;">No journal entries yet.</p>
+          <?php else: ?>
+            <?php foreach ($recent_journals as $j): ?>
+              <div class="mini-activity-item" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-weight: 600; color: var(--text-main); font-size: 0.9rem;"><?= htmlspecialchars($j['title']) ?></span>
+                  <span class="badge" style="font-size: 0.7rem; padding: 2px 8px;"><?= htmlspecialchars($j['mood']) ?></span>
+                </div>
+                <span class="text-muted" style="font-size: 0.85rem;"><?= htmlspecialchars($j['entry_date']) ?></span>
+              </div>
+            <?php endforeach; ?>
+          <?php endif; ?>
+        </div>
+
+        <!-- Right: Interactive Journal Calendar Widget -->
+        <div class="card" style="margin-top: 0; padding: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 600;">📅 Calendar (<?= date('M Y', strtotime("$cal_year-$cal_month-01")) ?>)</h3>
+            <div style="display: flex; gap: 6px;">
+                <?php 
+                    $prev_m = $cal_month - 1; $prev_y = $cal_year;
+                    if ($prev_m < 1) { $prev_m = 12; $prev_y--; }
+                    $next_m = $cal_month + 1; $next_y = $cal_year;
+                    if ($next_m > 12) { $next_m = 1; $next_y++; }
+                ?>
+                <a href="?y=<?= $prev_y ?>&m=<?= $prev_m ?>" class="btn btn-sm" style="padding: 3px 8px; background: #f1f5f9; text-decoration: none; color: #333; border-radius: 6px; font-size: 0.75rem;">&larr; Prev</a>
+                <a href="?y=<?= $next_y ?>&m=<?= $next_m ?>" class="btn btn-sm" style="padding: 3px 8px; background: #f1f5f9; text-decoration: none; color: #333; border-radius: 6px; font-size: 0.75rem;">Next &rarr;</a>
+            </div>
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 0.85rem;">
+            <thead>
+                <tr style="color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase;">
+                    <th style="padding: 6px;">M</th>
+                    <th style="padding: 6px;">T</th>
+                    <th style="padding: 6px;">W</th>
+                    <th style="padding: 6px;">T</th>
+                    <th style="padding: 6px;">F</th>
+                    <th style="padding: 6px;">S</th>
+                    <th style="padding: 6px;">S</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <?php
+                    $day_counter = 1;
+                    for ($i = 1; $i < $first_day_of_week; $i++) {
+                        echo '<td style="padding: 6px;"></td>';
+                        $day_counter++;
+                    }
+
+                    for ($day = 1; $day <= $days_in_month; $day++) {
+                        $formatted_day = str_pad($day, 2, '0', STR_PAD_LEFT);
+                        $formatted_month = str_pad($cal_month, 2, '0', STR_PAD_LEFT);
+                        $current_date_str = "$cal_year-$formatted_month-$formatted_day";
+                        
+                        $has_entry = isset($entries_by_date[$current_date_str]);
+                        $is_today = ($current_date_str === date('Y-m-d'));
+
+                        if ($has_entry) {
+                            $cell_bg = "#dcfce7";
+                            $text_color = "#166534";
+                            $border = "2px solid #22c55e";
+                        } else {
+                            $cell_bg = $is_today ? "#f1f5f9" : "transparent";
+                            $text_color = "var(--text-main)";
+                            $border = $is_today ? "1px dashed #cbd5e1" : "1px solid transparent";
+                        }
+
+                        echo '<td style="padding: 4px; text-align: center;">';
+                        if ($has_entry) {
+                            $entry_id = $entries_by_date[$current_date_str]['id'] ?? ($entries_by_date[$current_date_str]['journal_id'] ?? $entries_by_date[$current_date_str]['entry_id']);
+                            echo '<a href="edit_journal.php?id=' . $entry_id . '" title="Entry: ' . htmlspecialchars($entries_by_date[$current_date_str]['title']) . '" style="display: block; width: 30px; height: 30px; margin: 0 auto; line-height: 28px; background-color: ' . $cell_bg . '; color: ' . $text_color . '; border: ' . $border . '; border-radius: 50%; font-weight: 700; text-decoration: none; font-size: 0.8rem;">' . $day . '</a>';
+                        } else {
+                            echo '<div style="width: 30px; height: 30px; margin: 0 auto; line-height: 28px; background-color: ' . $cell_bg . '; color: ' . $text_color . '; border: ' . $border . '; border-radius: 50%; font-size: 0.8rem;">' . $day . '</div>';
+                        }
+                        echo '</td>';
+
+                        if ($day_counter % 7 == 0 && $day < $days_in_month) {
+                            echo '</tr><tr>';
+                        }
+                        $day_counter++;
+                    }
+                    ?>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+
       </div>
 
       <!-- Habit List + This Week -->
