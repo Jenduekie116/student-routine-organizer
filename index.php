@@ -40,7 +40,8 @@ if ($last_week_calories > 0) {
 }
 
 $stmt = $conn->prepare(
-    "SELECT activity_type, COUNT(*) AS cnt FROM exercise_records WHERE user_id = ? GROUP BY activity_type ORDER BY cnt DESC LIMIT 1"
+    "SELECT COALESCE(NULLIF(custom_activity_name,''), activity_type) AS activity_type, COUNT(*) AS cnt
+     FROM exercise_records WHERE user_id = ? GROUP BY activity_type ORDER BY cnt DESC LIMIT 1"
 );
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -489,9 +490,12 @@ $module_status = ($total_entries > 0) ? "Active ✨" : "No entries yet 📝";
             <?php if (empty($recent_records)): ?>
               <p class="text-muted" style="font-size:0.85rem; margin:0;">No workouts yet.</p>
             <?php else: ?>
-              <?php foreach ($recent_records as $r): ?>
+              <?php foreach ($recent_records as $r):
+                $ex_emoji = $r['emoji'] ?: '🏅';
+                $ex_name = ($r['activity_type'] === 'Other' && !empty($r['custom_activity_name'])) ? $r['custom_activity_name'] : $r['activity_type'];
+              ?>
                 <div class="mini-activity-item">
-                  <span class="badge"><?= htmlspecialchars($r['activity_type']) ?></span>
+                  <span class="badge"><?= htmlspecialchars($ex_emoji . ' ' . $ex_name) ?></span>
                   <span class="text-muted"><?= htmlspecialchars($r['exercise_date']) ?></span>
                   <span><?= (int) $r['calories_burned'] ?> kcal</span>
                 </div>

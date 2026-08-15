@@ -103,6 +103,7 @@ a:hover { text-decoration: underline; }
 .alert { padding: 10px 14px; border-radius: var(--radius); margin-bottom: 16px; font-size: 0.9rem; }
 .alert-danger { background: #fdeaea; color: var(--theme-danger); border: 1px solid #f5c2c2; }
 .alert-success { background: #eafaf0; color: var(--theme-success); border: 1px solid #b9ecc9; }
+.alert-neutral { background: #e2e8f0; color: #334155; border: 1px solid #94a3b8; }
 .alert-error { background: #fdeaea; color: var(--theme-danger); border: 1px solid #f5c2c2; } /* alias used by money_tracker.php */
 
 /* Journal add/edit form layout (shared - was duplicated in add_journal.php and edit_journal.php) */

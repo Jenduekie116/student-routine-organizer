@@ -15,10 +15,15 @@ SET time_zone = "+00:00";
 -- Database: `student_routine_db`
 -- --------------------------------------------------------
 
+-- UPDATED: added emoji + custom_activity_name so every activity type
+-- (including free-choice "Other" sports) can be shown with an icon,
+-- matching the pattern used by habit_records.
 CREATE TABLE `exercise_records` (
   `exercise_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `activity_type` varchar(50) NOT NULL,
+  `emoji` varchar(10) DEFAULT NULL,
+  `custom_activity_name` varchar(50) DEFAULT NULL,
   `duration_minutes` int(11) NOT NULL,
   `calories_burned` int(11) NOT NULL,
   `exercise_date` date NOT NULL,
@@ -37,9 +42,6 @@ CREATE TABLE `habit_records` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- FIXED: mood enum now matches exactly what add_journal.php / edit_journal.php
--- / diary_journal.php's filter dropdown actually offer (was missing 'Anxious',
--- had unused 'Stressed' and 'Tired').
 CREATE TABLE `journal_entries` (
   `journal_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
