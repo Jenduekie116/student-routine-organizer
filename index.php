@@ -265,21 +265,15 @@ $module_status = ($total_entries > 0) ? "Active ✨" : "No entries yet 📝";
 <title>Dashboard - Student Routine Organizer</title>
 <link rel="stylesheet" href="style.css">
 <style>
-/* 4-column snapshot row */
 .snapshot-row-4 {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
   margin-bottom: 20px;
 }
-@media (max-width: 900px) {
-  .snapshot-row-4 { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 500px) {
-  .snapshot-row-4 { grid-template-columns: 1fr; }
-}
+@media (max-width: 900px) { .snapshot-row-4 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 500px) { .snapshot-row-4 { grid-template-columns: 1fr; } }
 
-/* Smaller combined exercise card */
 .exercise-combo-card {
   background: linear-gradient(135deg, #22c55e, #16a34a);
   color: #fff;
@@ -298,38 +292,13 @@ $module_status = ($total_entries > 0) ? "Active ✨" : "No entries yet 📝";
   margin-bottom: 10px;
   background: rgba(255,255,255,0.22);
 }
-.exercise-combo-card .combo-top {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  flex: 1;
-}
+.exercise-combo-card .combo-top { display: flex; gap: 12px; align-items: flex-start; flex: 1; }
 .exercise-combo-card .combo-block { flex: 1; min-width: 0; }
-.exercise-combo-card .combo-label {
-  font-size: 0.72rem;
-  opacity: 0.85;
-  font-weight: 500;
-  margin-bottom: 2px;
-}
-.exercise-combo-card .combo-value {
-  font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: -0.3px;
-  line-height: 1.15;
-  word-break: break-word;
-}
-.exercise-combo-card .combo-sub {
-  font-size: 0.68rem;
-  opacity: 0.9;
-  margin-top: 2px;
-}
-.exercise-combo-card .combo-divider {
-  width: 1px;
-  background: rgba(255,255,255,0.25);
-  align-self: stretch;
-}
+.exercise-combo-card .combo-label { font-size: 0.72rem; opacity: 0.85; font-weight: 500; margin-bottom: 2px; }
+.exercise-combo-card .combo-value { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.3px; line-height: 1.15; word-break: break-word; }
+.exercise-combo-card .combo-sub { font-size: 0.68rem; opacity: 0.9; margin-top: 2px; }
+.exercise-combo-card .combo-divider { width: 1px; background: rgba(255,255,255,0.25); align-self: stretch; }
 
-/* Smaller habit gauge card */
 .habit-gauge-card {
   background: #fff;
   border-radius: var(--radius);
@@ -341,73 +310,19 @@ $module_status = ($total_entries > 0) ? "Active ✨" : "No entries yet 📝";
   align-items: center;
   min-height: 140px;
 }
-.habit-gauge-card .gauge-title {
-  align-self: flex-start;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--theme-text);
-  margin-bottom: 2px;
-}
-.habit-gauge-wrap {
-  position: relative;
-  width: 120px;
-  height: 76px;
-}
-.habit-gauge-wrap svg {
-  width: 120px;
-  height: 76px;
-  overflow: visible;
-}
-.habit-gauge-center {
-  position: absolute;
-  left: 0; right: 0;
-  bottom: 2px;
-  text-align: center;
-}
-.habit-gauge-center .pct {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--theme-text);
-  line-height: 1.1;
-}
-.habit-gauge-center .sub {
-  font-size: 0.62rem;
-  color: var(--theme-text-muted);
-  margin-top: 1px;
-}
-.habit-gauge-legend {
-  display: flex;
-  gap: 8px;
-  margin-top: 6px;
-  font-size: 0.65rem;
-  color: var(--theme-text-muted);
-  flex-wrap: wrap;
-  justify-content: center;
-}
-.habit-gauge-legend span {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.legend-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-}
+.habit-gauge-card .gauge-title { align-self: flex-start; font-size: 0.78rem; font-weight: 600; color: var(--theme-text); margin-bottom: 2px; }
+.habit-gauge-wrap { position: relative; width: 120px; height: 76px; }
+.habit-gauge-wrap svg { width: 120px; height: 76px; overflow: visible; }
+.habit-gauge-center { position: absolute; left: 0; right: 0; bottom: 2px; text-align: center; }
+.habit-gauge-center .pct { font-size: 1.2rem; font-weight: 700; color: var(--theme-text); line-height: 1.1; }
+.habit-gauge-center .sub { font-size: 0.62rem; color: var(--theme-text-muted); margin-top: 1px; }
+.habit-gauge-legend { display: flex; gap: 8px; margin-top: 6px; font-size: 0.65rem; color: var(--theme-text-muted); flex-wrap: wrap; justify-content: center; }
+.habit-gauge-legend span { display: inline-flex; align-items: center; gap: 4px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 .legend-dot.completed { background: #22c55e; }
-.legend-dot.pending {
-  background: repeating-linear-gradient(
-    -45deg, #94a3b8, #94a3b8 2px, transparent 2px, transparent 4px
-  );
-  border: 1px solid #94a3b8;
-}
+.legend-dot.pending { background: repeating-linear-gradient(-45deg, #94a3b8, #94a3b8 2px, transparent 2px, transparent 4px); border: 1px solid #94a3b8; }
 
-/* Money summary cards */
-.money-card-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+.money-card-stack { display: flex; flex-direction: column; gap: 10px; }
 .money-summary-card {
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
   color: #fff;
@@ -418,206 +333,33 @@ $module_status = ($total_entries > 0) ? "Active ✨" : "No entries yet 📝";
   flex-direction: column;
   min-height: 120px;
 }
-.money-chart-panel {
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 12px;
-  padding: 10px 12px;
-}
-.money-summary-card .icon-chip {
-  width: 32px; height: 32px;
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1rem;
-  margin-bottom: 10px;
-  background: rgba(255,255,255,0.22);
-}
-.money-summary-card .combo-label {
-  font-size: 0.72rem;
-  opacity: 0.85;
-  font-weight: 500;
-  margin-bottom: 2px;
-}
-.money-summary-card .combo-value {
-  font-size: 1.2rem;
-  font-weight: 700;
-  letter-spacing: -0.3px;
-  line-height: 1.15;
-}
-.money-summary-card .combo-sub {
-  font-size: 0.68rem;
-  opacity: 0.9;
-  margin-top: 4px;
-}
-.money-summary-card .money-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-  font-size: 0.72rem;
-  opacity: 0.92;
-}
-.money-summary-card .money-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.16);
-}
-.money-chart-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 10px;
-}
-.money-chart-bars {
-  flex: 1;
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  height: 48px;
-}
-.money-chart-bar {
-  flex: 1;
-  border-radius: 999px 999px 4px 4px;
-  min-height: 8px;
-}
-.money-chart-bar.income {
-  background: linear-gradient(180deg, #86efac, #22c55e);
-}
-.money-chart-bar.expense {
-  background: linear-gradient(180deg, #fda4af, #ef4444);
-}
-.money-chart-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.62rem;
-  opacity: 0.9;
-  margin-top: 4px;
-}
-.money-chart-labels span {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.money-chart-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  display: inline-block;
-}
-.money-chart-dot.income { background: #22c55e; }
-.money-chart-dot.expense { background: #ef4444; }
+.money-summary-card .icon-chip { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-bottom: 10px; background: rgba(255,255,255,0.22); }
+.money-summary-card .combo-label { font-size: 0.72rem; opacity: 0.85; font-weight: 500; margin-bottom: 2px; }
+.money-summary-card .combo-value { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.3px; line-height: 1.15; }
+.money-summary-card .money-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 8px; font-size: 0.72rem; opacity: 0.92; }
+.money-summary-card .money-pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 999px; background: rgba(255,255,255,0.16); }
 
-/* Blank placeholder cards */
-.snapshot-placeholder {
-  background: #fff;
-  border-radius: var(--radius);
-  border: 1.5px dashed #d1d5db;
-  min-height: 140px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #9ca3af;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-/* Compact habit list + week */
-.dash-habit-wrap {
-  display: grid;
-  grid-template-columns: 140px 1fr;
-  gap: 12px;
-}
-@media (max-width: 600px) {
-  .dash-habit-wrap { grid-template-columns: 1fr; }
-}
+.dash-habit-wrap { display: grid; grid-template-columns: 140px 1fr; gap: 12px; }
+@media (max-width: 600px) { .dash-habit-wrap { grid-template-columns: 1fr; } }
 .dash-habit-list { font-size: 0.8rem; }
-.dash-habit-list .item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 0;
-  border-bottom: 1px solid var(--theme-border);
-}
+.dash-habit-list .item { display: flex; align-items: center; gap: 6px; padding: 5px 0; border-bottom: 1px solid var(--theme-border); }
 .dash-habit-list .item:last-child { border-bottom: none; }
 .dash-habit-list .em { width: 18px; text-align: center; }
-.dash-habit-list .nm {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-weight: 500;
-}
-.dash-week-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.72rem;
-}
-.dash-week-table th, .dash-week-table td {
-  padding: 5px 4px;
-  text-align: center;
-  border-bottom: 1px solid var(--theme-border);
-}
-.dash-week-table th {
-  color: var(--theme-text-muted);
-  font-weight: 500;
-  font-size: 0.68rem;
-}
-.dash-week-table td.d {
-  text-align: left;
-  white-space: nowrap;
-  font-weight: 500;
-  min-width: 72px;
-}
-.dash-week-table .bar-wrap {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  min-width: 70px;
-}
-.dash-week-table .bar-track {
-  flex: 1;
-  height: 7px;
-  background: #eef0f4;
-  border-radius: 999px;
-  overflow: hidden;
-}
-.dash-week-table .bar-fill {
-  height: 100%;
-  background: #1f2430;
-  border-radius: 999px;
-}
-.dash-week-table .pct {
-  font-weight: 600;
-  min-width: 28px;
-  font-size: 0.68rem;
-}
-.dash-check {
-  display: inline-flex;
-  width: 16px; height: 16px;
-  border-radius: 3px;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.6rem;
-}
+.dash-habit-list .nm { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+.dash-week-table { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
+.dash-week-table th, .dash-week-table td { padding: 5px 4px; text-align: center; border-bottom: 1px solid var(--theme-border); }
+.dash-week-table th { color: var(--theme-text-muted); font-weight: 500; font-size: 0.68rem; }
+.dash-week-table td.d { text-align: left; white-space: nowrap; font-weight: 500; min-width: 72px; }
+.dash-week-table .bar-wrap { display: flex; align-items: center; gap: 5px; min-width: 70px; }
+.dash-week-table .bar-track { flex: 1; height: 7px; background: #eef0f4; border-radius: 999px; overflow: hidden; }
+.dash-week-table .bar-fill { height: 100%; background: #1f2430; border-radius: 999px; }
+.dash-week-table .pct { font-weight: 600; min-width: 28px; font-size: 0.68rem; }
+.dash-check { display: inline-flex; width: 16px; height: 16px; border-radius: 3px; align-items: center; justify-content: center; font-size: 0.6rem; }
 .dash-check.on { background: #3b82f6; color: #fff; }
 .dash-check.off { border: 1.5px solid #cbd5e1; background: #fff; }
 
-.section-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-.section-title-row h2 {
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 600;
-}
+.section-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.section-title-row h2 { margin: 0; font-size: 1.05rem; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -636,31 +378,23 @@ $module_status = ($total_entries > 0) ? "Active ✨" : "No entries yet 📝";
     <!-- ===================== TOP SNAPSHOT (4 columns) ===================== -->
     <div class="snapshot-row-4">
 
-      <!-- 1. Exercise combo (smaller) -->
       <div class="exercise-combo-card">
         <div class="icon-chip">🔥</div>
         <div class="combo-top">
           <div class="combo-block">
             <div class="combo-label">Workouts this week</div>
             <div class="combo-value"><?= (int)$week_stats['workouts'] ?></div>
-            <div class="combo-sub">
-              <?= (int)$week_stats['calories'] ?> kcal · <?= (int)$week_stats['minutes'] ?> min
-            </div>
+            <div class="combo-sub"><?= (int)$week_stats['calories'] ?> kcal · <?= (int)$week_stats['minutes'] ?> min</div>
           </div>
           <div class="combo-divider"></div>
           <div class="combo-block">
             <div class="combo-label">Top activity</div>
-            <div class="combo-value" style="font-size:1.05rem;">
-              <?= $top_activity ? htmlspecialchars($top_activity['activity_type']) : '—' ?>
-            </div>
-            <div class="combo-sub">
-              <?= $top_activity ? (int)$top_activity['cnt'] . ' session' . ((int)$top_activity['cnt'] === 1 ? '' : 's') : 'No data yet' ?>
-            </div>
+            <div class="combo-value" style="font-size:1.05rem;"><?= $top_activity ? htmlspecialchars($top_activity['activity_type']) : '—' ?></div>
+            <div class="combo-sub"><?= $top_activity ? (int)$top_activity['cnt'] . ' session' . ((int)$top_activity['cnt'] === 1 ? '' : 's') : 'No data yet' ?></div>
           </div>
         </div>
       </div>
 
-      <!-- 2. Habit Progress gauge (smaller) -->
       <?php
         $arc_r = 45;
         $arc_len = 3.14159 * $arc_r;
@@ -671,27 +405,19 @@ $module_status = ($total_entries > 0) ? "Active ✨" : "No entries yet 📝";
         <div class="gauge-title">Habit Progress</div>
         <div class="habit-gauge-wrap">
           <svg viewBox="0 0 120 76" aria-hidden="true">
-            <path d="M 15 68 A 45 45 0 0 1 105 68"
-                  fill="none" stroke="#e2e8f0" stroke-width="12"
-                  stroke-linecap="round"/>
+            <path d="M 15 68 A 45 45 0 0 1 105 68" fill="none" stroke="#e2e8f0" stroke-width="12" stroke-linecap="round"/>
             <defs>
               <pattern id="pendingStripes" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(-45)">
                 <line x1="0" y1="0" x2="0" y2="5" stroke="#94a3b8" stroke-width="2"/>
               </pattern>
             </defs>
             <?php if ($habit_pending > 0 && $habit_total > 0): ?>
-            <path d="M 15 68 A 45 45 0 0 1 105 68"
-                  fill="none" stroke="url(#pendingStripes)" stroke-width="12"
-                  stroke-linecap="round"
-                  stroke-dasharray="<?= round($pending_len, 1) ?> <?= round($arc_len, 1) ?>"
-                  stroke-dashoffset="<?= round(-$completed_len, 1) ?>"/>
+            <path d="M 15 68 A 45 45 0 0 1 105 68" fill="none" stroke="url(#pendingStripes)" stroke-width="12" stroke-linecap="round"
+                  stroke-dasharray="<?= round($pending_len, 1) ?> <?= round($arc_len, 1) ?>" stroke-dashoffset="<?= round(-$completed_len, 1) ?>"/>
             <?php endif; ?>
             <?php if ($habit_completed > 0 && $habit_total > 0): ?>
-            <path d="M 15 68 A 45 45 0 0 1 105 68"
-                  fill="none" stroke="#22c55e" stroke-width="12"
-                  stroke-linecap="round"
-                  stroke-dasharray="<?= round($completed_len, 1) ?> <?= round($arc_len, 1) ?>"
-                  stroke-dashoffset="0"/>
+            <path d="M 15 68 A 45 45 0 0 1 105 68" fill="none" stroke="#22c55e" stroke-width="12" stroke-linecap="round"
+                  stroke-dasharray="<?= round($completed_len, 1) ?> <?= round($arc_len, 1) ?>" stroke-dashoffset="0"/>
             <?php endif; ?>
           </svg>
           <div class="habit-gauge-center">
@@ -705,7 +431,6 @@ $module_status = ($total_entries > 0) ? "Active ✨" : "No entries yet 📝";
         </div>
       </div>
 
-      <!-- 3. Money summary -->
       <div class="money-card-stack">
         <div class="money-summary-card">
           <div class="icon-chip">💵</div>
@@ -720,33 +445,22 @@ $module_status = ($total_entries > 0) ? "Active ✨" : "No entries yet 📝";
             <?php endif; ?>
           </div>
         </div>
-
       </div>
 
-      
-      <!-- 4. Diary Journal Overview  -->
-      <a href="view_journals.php" style="text-decoration: none; color: inherit; display: block; height: 100%;">
+      <!-- FIXED: was pointing to non-existent view_journals.php -->
+      <a href="diary_journal.php" style="text-decoration: none; color: inherit; display: block; height: 100%;">
         <div style="background-color: #86efac; border-radius: 16px; padding: 20px; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06); height: 100%; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;">
-          
           <div>
-            <div style="font-size: 13px; font-weight: 600; color: #166534; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
-              Diary Journal
-            </div>
-            <div style="font-size: 28px; font-weight: 700; color: #14532d; margin-bottom: 4px;">
-              <?= $total_entries ?? 0 ?> Entries
-            </div>
+            <div style="font-size: 13px; font-weight: 600; color: #166534; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Diary Journal</div>
+            <div style="font-size: 28px; font-weight: 700; color: #14532d; margin-bottom: 4px;"><?= $total_entries ?? 0 ?> Entries</div>
             <div style="font-size: 13px; color: #166534; display: flex; align-items: center; gap: 6px;">
               <span>Frequent:</span>
               <span style="font-weight: 600;"><?= htmlspecialchars($frequent_mood ?? 'None') ?></span>
             </div>
           </div>
-
           <div style="margin-top: 14px;">
-            <span style="display: inline-block; background-color: rgba(22, 101, 52, 0.1); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; color: #166534;">
-              <?= $module_status ?? 'No entries yet' ?>
-            </span>
+            <span style="display: inline-block; background-color: rgba(22, 101, 52, 0.1); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; color: #166534;"><?= $module_status ?? 'No entries yet' ?></span>
           </div>
-
         </div>
       </a>
     </div>
@@ -759,7 +473,6 @@ $module_status = ($total_entries > 0) ? "Active ✨" : "No entries yet 📝";
 
     <?php else: ?>
 
-      <!-- ===================== BOTTOM: original chart + recent ===================== -->
       <div class="dashboard-row">
         <div class="card chart-card">
           <strong>Calories burned - last 7 days</strong>
@@ -789,9 +502,7 @@ $module_status = ($total_entries > 0) ? "Active ✨" : "No entries yet 📝";
       </div>
 
       <div class="card" style="margin-top:16px;">
-        <div class="section-title-row">
-          <h2>💰 Recent money activity</h2>
-        </div>
+        <div class="section-title-row"><h2>💰 Recent money activity</h2></div>
         <?php if (empty($recent_transactions)): ?>
           <p class="text-muted" style="margin:0; font-size:0.85rem;">No money transactions yet.</p>
         <?php else: ?>
@@ -808,27 +519,20 @@ $module_status = ($total_entries > 0) ? "Active ✨" : "No entries yet 📝";
       </div>
 
       <div class="card" style="margin-top:16px;">
-        <div class="section-title-row">
-          <h2>📈 Money analytics</h2>
-        </div>
+        <div class="section-title-row"><h2>📈 Money analytics</h2></div>
         <canvas id="moneyAnalyticsChart" style="margin-top:10px;"></canvas>
       </div>
 
-     <!-- ===================== COMBINED JOURNAL SECTION (List + Calendar) ===================== -->
       <div class="dashboard-row" style="margin-top: 16px;">
-        
-        <!-- Left: Recent Journal Entries List -->
         <div class="card" style="margin-top: 0; height: 100%;">
-          <div class="section-title-row">
-            <h2>📖 Recent journal entries</h2>
-          </div>
+          <div class="section-title-row"><h2>📖 Recent journal entries</h2></div>
           <?php if (empty($recent_journals)): ?>
             <p class="text-muted" style="margin:0; font-size:0.85rem;">No journal entries yet.</p>
           <?php else: ?>
             <?php foreach ($recent_journals as $j): ?>
               <div class="mini-activity-item" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0;">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                  <span style="font-weight: 600; color: var(--text-main); font-size: 0.9rem;"><?= htmlspecialchars($j['title']) ?></span>
+                  <span style="font-weight: 600; font-size: 0.9rem;"><?= htmlspecialchars($j['title']) ?></span>
                   <span class="badge" style="font-size: 0.7rem; padding: 2px 8px;"><?= htmlspecialchars($j['mood']) ?></span>
                 </div>
                 <span class="text-muted" style="font-size: 0.85rem;"><?= htmlspecialchars($j['entry_date']) ?></span>
@@ -837,32 +541,26 @@ $module_status = ($total_entries > 0) ? "Active ✨" : "No entries yet 📝";
           <?php endif; ?>
         </div>
 
-        <!-- Right: Interactive Journal Calendar Widget -->
         <div class="card" style="margin-top: 0; padding: 20px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <h3 style="margin: 0; font-size: 1.05rem; font-weight: 600;">📅 Calendar (<?= date('M Y', strtotime("$cal_year-$cal_month-01")) ?>)</h3>
             <div style="display: flex; gap: 6px;">
-                <?php 
+                <?php
                     $prev_m = $cal_month - 1; $prev_y = $cal_year;
                     if ($prev_m < 1) { $prev_m = 12; $prev_y--; }
                     $next_m = $cal_month + 1; $next_y = $cal_year;
                     if ($next_m > 12) { $next_m = 1; $next_y++; }
                 ?>
-                <a href="?y=<?= $prev_y ?>&m=<?= $prev_m ?>" class="btn btn-sm" style="padding: 3px 8px; background: #f1f5f9; text-decoration: none; color: #333; border-radius: 6px; font-size: 0.75rem;">&larr; Prev</a>
-                <a href="?y=<?= $next_y ?>&m=<?= $next_m ?>" class="btn btn-sm" style="padding: 3px 8px; background: #f1f5f9; text-decoration: none; color: #333; border-radius: 6px; font-size: 0.75rem;">Next &rarr;</a>
+                <a href="?y=<?= $prev_y ?>&m=<?= $prev_m ?>" class="btn btn-sm">&larr; Prev</a>
+                <a href="?y=<?= $next_y ?>&m=<?= $next_m ?>" class="btn btn-sm">Next &rarr;</a>
             </div>
           </div>
 
           <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 0.85rem;">
             <thead>
-                <tr style="color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase;">
-                    <th style="padding: 6px;">M</th>
-                    <th style="padding: 6px;">T</th>
-                    <th style="padding: 6px;">W</th>
-                    <th style="padding: 6px;">T</th>
-                    <th style="padding: 6px;">F</th>
-                    <th style="padding: 6px;">S</th>
-                    <th style="padding: 6px;">S</th>
+                <tr style="color: var(--theme-text-muted); font-size: 0.7rem; text-transform: uppercase;">
+                    <th style="padding: 6px;">M</th><th style="padding: 6px;">T</th><th style="padding: 6px;">W</th>
+                    <th style="padding: 6px;">T</th><th style="padding: 6px;">F</th><th style="padding: 6px;">S</th><th style="padding: 6px;">S</th>
                 </tr>
             </thead>
             <tbody>
@@ -878,23 +576,21 @@ $module_status = ($total_entries > 0) ? "Active ✨" : "No entries yet 📝";
                         $formatted_day = str_pad($day, 2, '0', STR_PAD_LEFT);
                         $formatted_month = str_pad($cal_month, 2, '0', STR_PAD_LEFT);
                         $current_date_str = "$cal_year-$formatted_month-$formatted_day";
-                        
+
                         $has_entry = isset($entries_by_date[$current_date_str]);
                         $is_today = ($current_date_str === date('Y-m-d'));
 
                         if ($has_entry) {
-                            $cell_bg = "#dcfce7";
-                            $text_color = "#166534";
-                            $border = "2px solid #22c55e";
+                            $cell_bg = "#dcfce7"; $text_color = "#166534"; $border = "2px solid #22c55e";
                         } else {
                             $cell_bg = $is_today ? "#f1f5f9" : "transparent";
-                            $text_color = "var(--text-main)";
+                            $text_color = "var(--theme-text)";
                             $border = $is_today ? "1px dashed #cbd5e1" : "1px solid transparent";
                         }
 
                         echo '<td style="padding: 4px; text-align: center;">';
                         if ($has_entry) {
-                            $entry_id = $entries_by_date[$current_date_str]['id'] ?? ($entries_by_date[$current_date_str]['journal_id'] ?? $entries_by_date[$current_date_str]['entry_id']);
+                            $entry_id = $entries_by_date[$current_date_str]['journal_id'];
                             echo '<a href="edit_journal.php?id=' . $entry_id . '" title="Entry: ' . htmlspecialchars($entries_by_date[$current_date_str]['title']) . '" style="display: block; width: 30px; height: 30px; margin: 0 auto; line-height: 28px; background-color: ' . $cell_bg . '; color: ' . $text_color . '; border: ' . $border . '; border-radius: 50%; font-weight: 700; text-decoration: none; font-size: 0.8rem;">' . $day . '</a>';
                         } else {
                             echo '<div style="width: 30px; height: 30px; margin: 0 auto; line-height: 28px; background-color: ' . $cell_bg . '; color: ' . $text_color . '; border: ' . $border . '; border-radius: 50%; font-size: 0.8rem;">' . $day . '</div>';
@@ -911,14 +607,10 @@ $module_status = ($total_entries > 0) ? "Active ✨" : "No entries yet 📝";
             </tbody>
           </table>
         </div>
-
       </div>
 
-      <!-- Habit List + This Week -->
       <div class="card" style="margin-top:16px;">
-        <div class="section-title-row">
-          <h2>✅ Habits</h2>
-        </div>
+        <div class="section-title-row"><h2>✅ Habits</h2></div>
         <?php if ($catalog_display_count === 0): ?>
           <p class="text-muted" style="margin:0; font-size:0.85rem;">No habits yet.</p>
           <a href="habit_tracker.php?action=add" class="btn btn-primary btn-sm" style="margin-top:10px;">+ Add habit</a>
@@ -1001,22 +693,12 @@ if (ctx) {
     type: 'bar',
     data: {
       labels: <?= json_encode($chart_labels) ?>,
-      datasets: [{
-        label: 'Calories burned',
-        data: <?= json_encode($chart_values) ?>,
-        backgroundColor: '#22c55e',
-        hoverBackgroundColor: '#16a34a',
-        borderRadius: 8,
-        maxBarThickness: 34
-      }]
+      datasets: [{ label: 'Calories burned', data: <?= json_encode($chart_values) ?>, backgroundColor: '#22c55e', hoverBackgroundColor: '#16a34a', borderRadius: 8, maxBarThickness: 34 }]
     },
     options: {
       responsive: true,
       plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#eef0f4' } },
-        x: { grid: { display: false } }
-      }
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#eef0f4' } }, x: { grid: { display: false } } }
     }
   });
 }
@@ -1028,29 +710,14 @@ if (moneyCtx) {
     data: {
       labels: <?= json_encode($money_chart_labels) ?>,
       datasets: [
-        {
-          label: 'Income',
-          data: <?= json_encode($money_chart_income) ?>,
-          backgroundColor: '#22c55e',
-          borderRadius: 6,
-          maxBarThickness: 24
-        },
-        {
-          label: 'Expense',
-          data: <?= json_encode($money_chart_expense) ?>,
-          backgroundColor: '#ef4444',
-          borderRadius: 6,
-          maxBarThickness: 24
-        }
+        { label: 'Income', data: <?= json_encode($money_chart_income) ?>, backgroundColor: '#22c55e', borderRadius: 6, maxBarThickness: 24 },
+        { label: 'Expense', data: <?= json_encode($money_chart_expense) ?>, backgroundColor: '#ef4444', borderRadius: 6, maxBarThickness: 24 }
       ]
     },
     options: {
       responsive: true,
       plugins: { legend: { position: 'bottom' } },
-      scales: {
-        y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#eef0f4' } },
-        x: { grid: { display: false } }
-      }
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#eef0f4' } }, x: { grid: { display: false } } }
     }
   });
 }

@@ -2,7 +2,7 @@
 require 'auth_guard.php';
 require 'database.php';
 
-$u_id = $_SESSION['user_id']; 
+$u_id = $_SESSION['user_id'];
 $msg = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
@@ -23,7 +23,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
         } else {
             try {
                 $stmt = $conn->prepare("INSERT INTO transactions (user_id, transaction_type, category, description, amount, transaction_date) VALUES (?, ?, ?, ?, ?, ?)");
-                // "i" for user_id (int), "s" for strings, "d" for amount (double)
                 $stmt->bind_param("isssds", $u_id, $type, $category, $description, $amount, $date);
 
                 if ($stmt->execute()) {
@@ -66,7 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
             }
         }
     }
-    // --- DELETE OPERATION ---
+    // --- DELETE OPERATION (soft delete) ---
     elseif ($action == 'delete') {
         $t_id = $_POST['t_id'];
         $stmt = $conn->prepare("UPDATE transactions SET is_deleted = 1 WHERE transaction_id=? AND user_id=?");
@@ -81,18 +80,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
 $filter_type = $_GET['search_type'] ?? '';
 $filter_date = $_GET['search_date'] ?? '';
 
-if (isset($_GET['sort_by'])) {
+// FIX: whitelist is now enforced on the value actually used in the SQL query,
+// not just on whether we write it to the cookie. Previously an arbitrary
+// $_GET['sort_by'] value could reach the query string directly.
+$allowed_sort_values = ['DESC', 'ASC'];
+
+if (isset($_GET['sort_by']) && in_array($_GET['sort_by'], $allowed_sort_values, true)) {
     $sort_by = $_GET['sort_by'];
-    if ($sort_by == 'DESC' || $sort_by == 'ASC') {
-        setcookie("Money_Sort", $sort_by, time() + (86400 * 30), "/");
-    }
+    setcookie("Money_Sort", $sort_by, time() + (86400 * 30), "/");
+} elseif (isset($_COOKIE['Money_Sort']) && in_array($_COOKIE['Money_Sort'], $allowed_sort_values, true)) {
+    $sort_by = $_COOKIE['Money_Sort'];
 } else {
-    $sort_by = isset($_COOKIE['Money_Sort']) ? $_COOKIE['Money_Sort'] : 'DESC';
+    $sort_by = 'DESC';
 }
 
 $sql = "SELECT * FROM transactions WHERE user_id = ? AND is_deleted = 0";
 $params = [$u_id];
-$types = "i"; // Changed to 'i' for integer user_id
+$types = "i";
 
 if ($filter_type != '') {
     $sql .= " AND transaction_type = ?";
@@ -105,7 +109,7 @@ if ($filter_date != '') {
     $types .= "s";
 }
 
-$sql .= " ORDER BY transaction_date " . $sort_by;
+$sql .= " ORDER BY transaction_date " . $sort_by; // safe now: $sort_by is guaranteed 'DESC' or 'ASC'
 $stmt = $conn->prepare($sql);
 if (!empty($params)) {
     $stmt->bind_param($types, ...$params);
@@ -115,7 +119,7 @@ $transactions = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // Calculate totals for Income and Expenses
 $stmtTotal = $conn->prepare("
-    SELECT 
+    SELECT
         SUM(CASE WHEN transaction_type = 'Income' THEN amount ELSE 0 END) AS total_income,
         SUM(CASE WHEN transaction_type = 'Expense' THEN amount ELSE 0 END) AS total_expense
     FROM transactions WHERE user_id = ? AND is_deleted = 0");
@@ -140,9 +144,6 @@ $balance = $total_income - $total_expense;
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th, td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; }
         th { background: #edf2f7; color: #4a5568; font-weight: bold; text-transform: uppercase; font-size: 0.85rem; }
-        .alert { padding: 10px; border-radius: 5px; margin-bottom: 15px; }
-        .alert-success { background: #c6f6d5; color: #2f855a; }
-        .alert-error { background: #fed7d7; color: #c53030; }
         .action-icon { cursor: pointer; padding: 5px; margin-right: 5px; font-size: 1.2rem; }
         .income { color: #38a169; font-weight: bold; }
         .expense { color: #e53e3e; font-weight: bold; }
@@ -155,27 +156,27 @@ $balance = $total_income - $total_expense;
             <div class="container">
                 <div class="page-header">
                     <h1>💰 My Money Tracker</h1>
-                    <button class="btn" onclick="openAddModal()">+ Add Transaction</button>
+                    <button class="btn btn-primary" onclick="openAddModal()">+ Add Transaction</button>
                 </div>
 
                 <div style="display: flex; gap: 20px; margin-bottom: 25px;">
-                    <div style="flex: 1; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                        <p style="color: #718096; margin: 0 0 5px 0;">Total Income</p>
+                    <div class="card" style="flex: 1;">
+                        <p class="text-muted" style="margin: 0 0 5px 0;">Total Income</p>
                         <h2 style="color: #38a169; margin: 0;">RM <?= number_format($total_income, 2) ?></h2>
                     </div>
-                    <div style="flex: 1; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                        <p style="color: #718096; margin: 0 0 5px 0;">Total Expense</p>
+                    <div class="card" style="flex: 1;">
+                        <p class="text-muted" style="margin: 0 0 5px 0;">Total Expense</p>
                         <h2 style="color: #e53e3e; margin: 0;">RM <?= number_format($total_expense, 2) ?></h2>
                     </div>
-                    <div style="flex: 1; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                        <p style="color: #718096; margin: 0 0 5px 0;">Net Balance</p>
+                    <div class="card" style="flex: 1;">
+                        <p class="text-muted" style="margin: 0 0 5px 0;">Net Balance</p>
                         <h2 style="color: <?= $balance >= 0 ? '#38a169' : '#e53e3e' ?>; margin: 0;">RM <?= number_format($balance, 2) ?></h2>
                     </div>
                 </div>
 
                 <?= $msg ?>
 
-                        <form method="GET" class="filter-bar">
+                <form method="GET" class="filter-bar">
                     <div><label>Type</label>
                         <select name="search_type">
                             <option value="">All</option>
@@ -193,13 +194,13 @@ $balance = $total_income - $total_expense;
                     <div style="flex: 0; min-width: 180px;">
                         <label style="visibility: hidden; display: block;">Action</label>
                         <div style="display: flex; gap: 10px;">
-                            <button type="submit" class="btn" style="flex: 1;">Filter</button>
-                            <a href="money_tracker.php" class="btn" style="flex: 1; background: #a0aec0; text-align:center; text-decoration: none;">Clear</a>
+                            <button type="submit" class="btn btn-primary" style="flex: 1;">Filter</button>
+                            <a href="money_tracker.php" class="btn" style="flex: 1; text-align:center;">Clear</a>
                         </div>
                     </div>
                 </form>
 
-                        <div class="table-wrapper">
+                <div class="table-wrapper">
                     <table>
                         <thead>
                             <tr>
@@ -213,7 +214,7 @@ $balance = $total_income - $total_expense;
                         </thead>
                         <tbody>
                             <?php if (count($transactions) > 0): ?>
-                                <?php foreach ($transactions as $t): 
+                                <?php foreach ($transactions as $t):
                                     $safeDesc = htmlspecialchars(addslashes($t['description']));
                                     $safeCat = htmlspecialchars(addslashes($t['category']));
                                     $safeDate = htmlspecialchars($t['transaction_date']);
@@ -249,7 +250,7 @@ $balance = $total_income - $total_expense;
     <!-- Modal for Add/Edit -->
     <div id="formModal" class="modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);">
         <div class="modal-content" style="background: white; margin: 10% auto; padding: 20px; width: 80%; max-width: 500px; border-radius: 8px;">
-            <span class="close" onclick="closeModals()" style="float: right; cursor: pointer; font-size: 1.5rem;">&times;</span>
+            <span onclick="closeModals()" style="float: right; cursor: pointer; font-size: 1.5rem;">&times;</span>
             <h2 id="modalTitle" style="color: #2b6cb0; margin-bottom: 20px;">Add Transaction</h2>
             <form method="POST" action="">
                 <input type="hidden" id="formAction" name="action" value="add">
@@ -295,7 +296,6 @@ $balance = $total_income - $total_expense;
         </div>
     </div>
 
-    <!-- Hidden form for soft delete -->
     <form id="deleteForm" method="POST" style="display: none;">
         <input type="hidden" name="action" value="delete">
         <input type="hidden" name="t_id" id="delete_t_id">
@@ -310,14 +310,14 @@ $balance = $total_income - $total_expense;
             document.getElementById('modalTitle').innerText = "Add New Transaction";
             document.getElementById('formAction').value = "add";
             document.getElementById('submitBtn').innerText = "Save Transaction";
-            
+
             document.getElementById('t_id').value = "";
             document.getElementById('transaction_type').value = "Expense";
             document.getElementById('category').value = "Food & Dining";
             document.getElementById('description').value = "";
             document.getElementById('amount').value = "";
             document.getElementById('transaction_date').value = "";
-            
+
             document.getElementById('formModal').style.display = 'block';
         }
 
@@ -325,14 +325,14 @@ $balance = $total_income - $total_expense;
             document.getElementById('modalTitle').innerText = "Edit Transaction";
             document.getElementById('formAction').value = "edit";
             document.getElementById('submitBtn').innerText = "Update Transaction";
-            
+
             document.getElementById('t_id').value = id;
             document.getElementById('transaction_type').value = type;
             document.getElementById('category').value = category;
             document.getElementById('description').value = description;
             document.getElementById('amount').value = amount;
             document.getElementById('transaction_date').value = date;
-            
+
             document.getElementById('formModal').style.display = 'block';
         }
 
