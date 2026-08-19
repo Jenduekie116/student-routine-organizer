@@ -60,7 +60,7 @@ CREATE TABLE `transactions` (
   `description` varchar(255) NOT NULL,
   `amount` decimal(10,2) NOT NULL,
   `transaction_date` date NOT NULL,
-  `is_deleted` tinyint(1) DEFAULT 0
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `users` (

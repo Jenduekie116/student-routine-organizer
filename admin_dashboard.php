@@ -23,7 +23,7 @@ $total_students     = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role =
 $total_admins       = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role = 'admin'")->fetch_assoc()['c'];
 $total_exercise     = $conn->query("SELECT COUNT(*) AS c FROM exercise_records")->fetch_assoc()['c'];
 $total_journal      = $conn->query("SELECT COUNT(*) AS c FROM journal_entries")->fetch_assoc()['c'];
-$total_transactions = $conn->query("SELECT COUNT(*) AS c FROM transactions WHERE is_deleted = 0")->fetch_assoc()['c'];
+$total_transactions = $conn->query("SELECT COUNT(*) AS c FROM transactions")->fetch_assoc()['c'];
 $total_habits       = $conn->query("SELECT COUNT(*) AS c FROM habit_records")->fetch_assoc()['c'];
 
 // ---------------------------------------------------------
@@ -33,7 +33,7 @@ $users_result = $conn->query(
     "SELECT u.user_id, u.name, u.email, u.role, u.created_at,
         (SELECT COUNT(*) FROM exercise_records er WHERE er.user_id = u.user_id) AS exercise_count,
         (SELECT COUNT(*) FROM journal_entries je WHERE je.user_id = u.user_id) AS journal_count,
-        (SELECT COUNT(*) FROM transactions t WHERE t.user_id = u.user_id AND t.is_deleted = 0) AS transaction_count,
+        (SELECT COUNT(*) FROM transactions t WHERE t.user_id = u.user_id) AS transaction_count,
         (SELECT COUNT(*) FROM habit_records hr WHERE hr.user_id = u.user_id) AS habit_count
      FROM users u
      ORDER BY u.created_at DESC"

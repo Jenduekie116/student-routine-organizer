@@ -140,7 +140,7 @@ $stmt = $conn->prepare(
         COALESCE(SUM(CASE WHEN transaction_type = 'Income' THEN amount ELSE 0 END), 0) AS total_income,
         COALESCE(SUM(CASE WHEN transaction_type = 'Expense' THEN amount ELSE 0 END), 0) AS total_expense
      FROM transactions
-     WHERE user_id = ? AND is_deleted = 0 AND transaction_date BETWEEN ? AND ?"
+     WHERE user_id = ? AND transaction_date BETWEEN ? AND ?"
 );
 $stmt->bind_param("iss", $user_id, $this_month_start, $this_month_end);
 $stmt->execute();
@@ -152,7 +152,7 @@ $money_balance = $money_income - $money_expense;
 $stmt = $conn->prepare(
     "SELECT transaction_type, category, description, amount, transaction_date
      FROM transactions
-     WHERE user_id = ? AND is_deleted = 0
+     WHERE user_id = ?
      ORDER BY transaction_date DESC, transaction_id DESC
      LIMIT 4"
 );
@@ -163,7 +163,7 @@ $recent_transactions = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt = $conn->prepare(
     "SELECT category, SUM(amount) AS total_spent
      FROM transactions
-     WHERE user_id = ? AND is_deleted = 0 AND transaction_type = 'Expense'
+     WHERE user_id = ? AND transaction_type = 'Expense'
      GROUP BY category
      ORDER BY total_spent DESC
      LIMIT 1"
@@ -177,7 +177,7 @@ $money_chart_end   = date('Y-m-d');
 $stmt = $conn->prepare(
     "SELECT transaction_date, transaction_type, SUM(amount) AS total_amount
      FROM transactions
-     WHERE user_id = ? AND is_deleted = 0 AND transaction_date BETWEEN ? AND ?
+     WHERE user_id = ? AND transaction_date BETWEEN ? AND ?
      GROUP BY transaction_date, transaction_type
      ORDER BY transaction_date ASC"
 );

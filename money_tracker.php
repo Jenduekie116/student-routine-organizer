@@ -65,10 +65,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
             }
         }
     }
+
     // --- DELETE OPERATION (soft delete) ---
     elseif ($action == 'delete') {
         $t_id = $_POST['t_id'];
-        $stmt = $conn->prepare("UPDATE transactions SET is_deleted = 1 WHERE transaction_id=? AND user_id=?");
+        $stmt = $conn->prepare("DELETE FROM transactions WHERE transaction_id=? AND user_id=?");
         $stmt->bind_param("ii", $t_id, $u_id);
         if ($stmt->execute()) {
             $msg = "<div class='alert alert-success'>Transaction deleted successfully!</div>";
@@ -94,7 +95,7 @@ if (isset($_GET['sort_by']) && in_array($_GET['sort_by'], $allowed_sort_values, 
     $sort_by = 'DESC';
 }
 
-$sql = "SELECT * FROM transactions WHERE user_id = ? AND is_deleted = 0";
+$sql = "SELECT * FROM transactions WHERE user_id = ?";
 $params = [$u_id];
 $types = "i";
 
@@ -122,7 +123,7 @@ $stmtTotal = $conn->prepare("
     SELECT
         SUM(CASE WHEN transaction_type = 'Income' THEN amount ELSE 0 END) AS total_income,
         SUM(CASE WHEN transaction_type = 'Expense' THEN amount ELSE 0 END) AS total_expense
-    FROM transactions WHERE user_id = ? AND is_deleted = 0");
+    FROM transactions WHERE user_id = ?");
 $stmtTotal->bind_param("i", $u_id);
 $stmtTotal->execute();
 $summary = $stmtTotal->get_result()->fetch_assoc();
