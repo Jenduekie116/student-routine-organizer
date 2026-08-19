@@ -236,6 +236,11 @@ $freq_mood_res = $freq_mood_stmt->get_result()->fetch_assoc();
 $frequent_mood = $freq_mood_res ? $freq_mood_res['mood_status'] : 'None yet';
 $freq_mood_stmt->close();
 
+$has_any_dashboard_activity = $has_any_records
+  || $catalog_display_count > 0
+  || !empty($recent_transactions)
+  || !empty($recent_journals);
+
 // Calendar variables
 $cal_year = isset($_GET['y']) ? (int)$_GET['y'] : date('Y');
 $cal_month = isset($_GET['m']) ? (int)$_GET['m'] : date('m');
@@ -466,10 +471,10 @@ $module_status = ($total_entries > 0) ? "Active ✨" : "No entries yet 📝";
       </a>
     </div>
 
-    <?php if (!$has_any_records && $catalog_display_count === 0): ?>
+    <?php if (!$has_any_dashboard_activity): ?>
 
       <div class="card">
-        <p class="text-muted">No activity yet. Log a workout or add a habit to get started.</p>
+        <p class="text-muted">No activity yet. Log any tracker to get started.</p>
       </div>
 
     <?php else: ?>
