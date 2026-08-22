@@ -13,7 +13,11 @@ if ($entry_id > 0) {
         header("Location: diary_journal.php?deleted=1");
         exit();
     } else {
-        echo "Error deleting entry.";
+        // Log the real DB error for debugging; redirect the user back
+        // with a friendly flag instead of echoing raw error text.
+        error_log("Diary Journal delete failed: " . $stmt->error);
+        header("Location: diary_journal.php?error=delete_failed");
+        exit();
     }
     $stmt->close();
 } else {

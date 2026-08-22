@@ -1,6 +1,7 @@
 <?php
 require 'auth_guard.php';
 require 'database.php';
+require 'journal_validation.php';
 
 $user_id = $_SESSION['user_id'];
 $journal_id = $_GET['id'] ?? 0;
@@ -13,7 +14,7 @@ $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
     // If entry doesn't exist or doesn't belong to the user, redirect back
-    header("Location: diary_journal.php?success=notfound");
+    header("Location: diary_journal.php?error=notfound");
     exit();
 }
 
@@ -33,7 +34,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $mood_status = $_POST['mood_status'];
     $date = $_POST['date'];
 
-    if (!empty($title) && !empty($content) && !empty($mood_status) && !empty($date)) {
+    $errors = validateJournalEntry($title, $content, $mood_status, $date);
+
+    if (empty($errors)) {
         $update_stmt = $conn->prepare("UPDATE journal_entries SET title = ?, content = ?, mood = ?, entry_date = ? WHERE journal_id = ? AND user_id = ?");
         $update_stmt->bind_param("ssssii", $title, $content, $mood_status, $date, $journal_id, $user_id);
 
@@ -41,11 +44,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: diary_journal.php?updated=1");
             exit();
         } else {
-            $error = "Error updating entry.";
+            // Log the real DB error for debugging; never show it to the user.
+            error_log("Diary Journal update failed: " . $update_stmt->error);
+            $error = "Something went wrong while updating your entry. Please try again.";
         }
         $update_stmt->close();
     } else {
-        $error = "All fields are required.";
+        $error = implode(' ', $errors);
     }
 }
 ?>

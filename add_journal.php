@@ -1,6 +1,7 @@
 <?php
 require 'auth_guard.php';
 require 'database.php';
+require 'journal_validation.php';
 
 $title = '';
 $content = '';
@@ -15,7 +16,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $mood_status = trim($_POST['mood_status'] ?? '');
     $date = trim($_POST['date'] ?? '');
 
-    if (!empty($title) && !empty($content) && !empty($mood_status) && !empty($date)) {
+    $errors = validateJournalEntry($title, $content, $mood_status, $date);
+
+    if (empty($errors)) {
         $stmt = $conn->prepare("INSERT INTO journal_entries (user_id, title, content, mood, entry_date) VALUES (?, ?, ?, ?, ?)");
         $stmt->bind_param("issss", $user_id, $title, $content, $mood_status, $date);
 
@@ -23,11 +26,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: diary_journal.php?success=1");
             exit();
         } else {
-            $error = "Error adding entry. Please try again.";
+            // Log the real DB error for debugging; never show it to the user.
+            error_log("Diary Journal insert failed: " . $stmt->error);
+            $error = "Something went wrong while saving your entry. Please try again.";
         }
         $stmt->close();
     } else {
-        $error = "All fields are required.";
+        $error = implode(' ', $errors);
     }
 }
 ?>

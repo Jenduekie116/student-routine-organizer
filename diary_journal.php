@@ -316,12 +316,32 @@ $mood_data = getMoodData($frequent_mood);
                 </div>
 
                 <?php if (isset($_GET['success'])): ?>
-                    <div class="alert alert-success">Journal entry added successfully!</div>
+                    <div class="alert alert-success" id="journal-alert">Journal entry added successfully!</div>
                 <?php elseif (isset($_GET['updated'])): ?>
-                    <div class="alert alert-success">Journal entry updated successfully!</div>
+                    <div class="alert alert-success" id="journal-alert">Journal entry updated successfully!</div>
                 <?php elseif (isset($_GET['deleted'])): ?>
-                    <div class="alert alert-success">Journal entry deleted successfully!</div>
+                    <div class="alert alert-success" id="journal-alert">Journal entry deleted successfully!</div>
+                <?php elseif (isset($_GET['error']) && $_GET['error'] === 'delete_failed'): ?>
+                    <div class="alert alert-danger" id="journal-alert">Unable to delete that entry. Please try again.</div>
+                <?php elseif (isset($_GET['error']) && $_GET['error'] === 'notfound'): ?>
+                    <div class="alert alert-danger" id="journal-alert">That journal entry could not be found.</div>
                 <?php endif; ?>
+
+                <script>
+                    // Auto-fade the confirmation/error banner above after a few seconds,
+                    // instead of leaving it on screen until the user navigates away.
+                    (function () {
+                        var alertBox = document.getElementById('journal-alert');
+                        if (!alertBox) return;
+                        alertBox.style.transition = 'opacity 0.6s ease';
+                        setTimeout(function () {
+                            alertBox.style.opacity = '0';
+                            setTimeout(function () {
+                                alertBox.style.display = 'none';
+                            }, 600);
+                        }, 3000);
+                    })();
+                </script>
 
                 <div class="cards-grid" style="grid-template-columns: repeat(3, 1fr);">
                     <div class="card highlight">
