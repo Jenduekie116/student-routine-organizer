@@ -103,10 +103,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <label>Mood Status</label>
                             <select name="mood_status" class="form-control" required>
                                 <option value="Happy" <?php if(isset($mood_status) && $mood_status == 'Happy') echo 'selected'; ?>>😊 Happy</option>
-                                <option value="Excited" <?php if(isset($mood_status) && $mood_status == 'Excited') echo 'selected'; ?>>🎉 Excited</option>
+                                <option value="Excited" <?php if(isset($mood_status) && $mood_status == 'Excited') echo 'selected'; ?>>😆 Excited</option>
                                 <option value="Neutral" <?php if(isset($mood_status) && $mood_status == 'Neutral') echo 'selected'; ?>>😐 Neutral</option>
-                                <option value="Sad" <?php if(isset($mood_status) && $mood_status == 'Sad') echo 'selected'; ?>>🌧️ Sad</option>
-                                <option value="Anxious" <?php if(isset($mood_status) && $mood_status == 'Anxious') echo 'selected'; ?>>⚡ Anxious</option>
+                                <option value="Sad" <?php if(isset($mood_status) && $mood_status == 'Sad') echo 'selected'; ?>>🥲 Sad</option>
+                                <option value="Anxious" <?php if(isset($mood_status) && $mood_status == 'Anxious') echo 'selected'; ?>>😰 Anxious</option>
                             </select>
                         </div>
                     </div>
